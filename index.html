@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathQuest — Fun Math for Grades 4–6</title>
+<style>
+  :root{
+    /* clean sky-blue / teal / coral palette */
+    --brand:#0ea5e9; --brand-d:#0284c7; --teal:#14b8a6; --sky:#38bdf8;
+    --coral:#fb7185; --amber:#f59e0b; --yellow:#fbbf24; --green:#22c55e; --green-l:#86efac; --red:#ef4444;
+    --bg:#eef4f9; --card:#ffffff; --text:#0f2942; --muted:#5f7189; --line:#e2e8f0;
+    /* legacy aliases so older class/JS refs still theme correctly */
+    --purple:#0ea5e9; --purple-dark:#0284c7; --pink:#fb7185; --blue:#38bdf8; --orange:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Nunito','Trebuchet MS','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden}
+
+  header{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:0 1px 0 var(--line);position:sticky;top:0;z-index:50}
+  nav{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:5px;padding:9px 16px;flex-wrap:wrap}
+  .logo{font-size:1.28rem;font-weight:800;color:var(--brand);margin-right:auto;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .logo small{display:block;font-size:.55rem;color:var(--muted);font-weight:700;letter-spacing:1.5px}
+  .tab-btn{border:none;background:transparent;font-size:.82rem;font-weight:700;color:var(--muted);padding:7px 11px;border-radius:12px;cursor:pointer;transition:.15s}
+  .tab-btn:hover{background:var(--bg);color:var(--brand)}
+  .tab-btn.active{background:var(--brand);color:#fff}
+  .pill{color:#fff;font-weight:800;padding:6px 11px;border-radius:12px;font-size:.82rem;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+  .streak-pill{background:var(--coral)}
+  .xp-pill{background:var(--amber)}
+  .mute-btn{border:none;background:var(--bg);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem}
+  .levelwrap{display:flex;align-items:center}
+  .ring{position:relative;width:38px;height:38px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .lvl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:var(--brand)}
+
+  main{max-width:1080px;margin:0 auto;padding:22px 16px 80px}
+  .page{display:none;animation:fade .28s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+  /* hero — calm, single soft gradient */
+  .hero{position:relative;overflow:hidden;color:#fff;border-radius:24px;padding:34px 30px;margin-bottom:24px;
+    background:linear-gradient(120deg,var(--brand),var(--teal));display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .hero .htext{flex:1;min-width:230px}
+  .hero .grade-badge{display:inline-block;background:rgba(255,255,255,.22);padding:5px 15px;border-radius:20px;font-weight:800;font-size:.8rem;margin-bottom:10px}
+  .hero h1{font-size:2rem;margin-bottom:8px}
+  .hero p{font-size:1rem;opacity:.96;margin-bottom:18px}
+  .hero .duck-hero{width:120px;flex-shrink:0;opacity:.95}
+  .big-btn{background:#fff;color:var(--brand);border:none;font-size:1rem;font-weight:800;padding:13px 26px;border-radius:14px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.12);transition:.1s}
+  .big-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+
+  .grade-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:26px}
+  .grade-card{border-radius:18px;padding:22px;color:#fff;cursor:pointer;position:relative;overflow:hidden;transition:.16s;box-shadow:0 6px 16px rgba(15,41,66,.10)}
+  .grade-card:hover{transform:translateY(-5px)}
+  .grade-card h3{font-size:1.4rem;margin-bottom:4px}
+  .grade-card p{font-size:.84rem;opacity:.95;margin-bottom:14px;min-height:38px}
+  .grade-card .gc-prog{height:8px;background:rgba(255,255,255,.35);border-radius:8px;overflow:hidden}
+  .grade-card .gc-prog>span{display:block;height:100%;width:0;background:#fff;transition:width .5s}
+  .grade-card .gc-emoji{font-size:2.2rem}
+
+  .stats{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+  .stat{flex:1;min-width:110px;background:var(--card);border-radius:16px;padding:15px;text-align:center;box-shadow:0 3px 12px rgba(15,41,66,.06)}
+  .stat .num{font-size:1.5rem;font-weight:800;color:var(--brand)}
+  .stat .label{font-size:.76rem;color:var(--muted)}
+
+  h2.section-title{font-size:1.3rem;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:16px}
+  .back-link{background:none;border:none;color:var(--brand);font-weight:800;cursor:pointer;margin-bottom:12px;font-size:.9rem}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .card{background:var(--card);border-radius:16px;padding:20px;cursor:pointer;box-shadow:0 3px 12px rgba(15,41,66,.06);transition:.16s;border:2px solid var(--line);position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(15,41,66,.12);border-color:var(--brand)}
+  .card .icon{font-size:1.9rem}
+  .card h3{margin:8px 0 4px;font-size:1.05rem}
+  .card p{font-size:.8rem;color:var(--muted);margin-bottom:12px;min-height:32px}
+  .bar{height:8px;background:var(--bg);border-radius:8px;overflow:hidden}
+  .bar>span{display:block;height:100%;width:0;background:var(--teal);transition:width .5s}
+  .card .tag{position:absolute;top:12px;right:12px;font-size:.66rem;font-weight:800;padding:3px 9px;border-radius:8px;color:#fff}
+  .start-here{position:absolute;top:12px;left:12px;background:var(--green);color:#fff;font-size:.64rem;font-weight:800;padding:3px 8px;border-radius:8px;animation:pop .4s}
+
+  .unit-head{border-radius:18px;padding:22px;color:#fff;margin-bottom:18px;box-shadow:0 6px 18px rgba(15,41,66,.12)}
+  .unit-head h2{font-size:1.45rem}
+  .unit-head p{opacity:.95;margin-top:4px;font-size:.92rem}
+  .unit-head .code{font-size:.72rem;opacity:.85;font-weight:800;letter-spacing:1px}
+
+  .path-step{background:var(--card);border-radius:14px;padding:15px 18px;margin-bottom:12px;box-shadow:0 3px 12px rgba(15,41,66,.06);display:flex;align-items:center;gap:14px;transition:.15s;flex-wrap:wrap}
+  .path-step:hover{transform:translateX(3px)}
+  .step-num{width:40px;height:40px;flex-shrink:0;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem}
+  .step-body{flex:1;min-width:150px}.step-body h4{margin-bottom:2px;font-size:1rem}.step-body p{font-size:.78rem;color:var(--muted)}
+  .step-body .mini-bar{height:6px;background:var(--bg);border-radius:6px;margin-top:6px;overflow:hidden;max-width:180px}
+  .step-body .mini-bar>span{display:block;height:100%;width:0;background:var(--green);transition:width .4s}
+  .go-btn{color:#fff;border:none;padding:9px 15px;border-radius:12px;font-weight:800;cursor:pointer;white-space:nowrap;transition:.12s;box-shadow:0 4px 0 rgba(0,0,0,.10)}
+  .go-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.10)}
+  .go-btn.ghost{background:#eef4f9;color:var(--brand);box-shadow:0 4px 0 #dbe6ef}
+  .done-check{color:var(--green);font-weight:800;margin-left:4px}
+
+  .lesson-box{background:var(--card);border-radius:16px;padding:24px;box-shadow:0 3px 12px rgba(15,41,66,.06);margin-bottom:16px}
+  .lesson-box h3{margin-bottom:10px;color:var(--brand)}
+  .lesson-box p{margin-bottom:12px}
+  .keybox{background:#fff7ed;border-left:5px solid var(--amber);padding:12px 16px;border-radius:10px;margin:14px 0}
+  .keybox b{color:#c2560c}
+  .playground{background:var(--bg);border-radius:14px;padding:20px;margin:16px 0}
+  .playground h4{margin-bottom:10px;text-align:center}
+  .ctrl-btn{background:var(--brand);color:#fff;border:none;width:38px;height:38px;border-radius:50%;font-size:1.2rem;cursor:pointer;margin:0 4px}
+  input[type=range]{width:100%;accent-color:var(--brand)}
+  .readout{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+  .readout .chip{background:#fff;border-radius:12px;padding:9px 15px;text-align:center;box-shadow:0 2px 8px rgba(15,41,66,.08)}
+  .readout .chip b{display:block;font-size:1.25rem;color:var(--brand)}
+  .readout .chip span{font-size:.7rem;color:var(--muted)}
+  label.fld{display:block;font-size:.82rem;font-weight:700;margin:8px 0 4px;color:var(--muted)}
+  input.num{width:100%;padding:9px;border:2px solid var(--line);border-radius:10px;font-size:1rem}
+  .example{background:#ecfeff;border-left:5px solid var(--teal);border-radius:10px;padding:12px 16px;margin:14px 0}
+  .example h4{color:#0e7490;margin-bottom:8px}
+  .example .step{display:none;margin:6px 0;animation:fade .25s}
+  .example .step.show{display:block}
+  .hintbtn{background:var(--teal);color:#fff;border:none;padding:8px 16px;border-radius:12px;font-weight:800;cursor:pointer;margin-top:6px}
+
+  .quiz-box{background:var(--card);border-radius:16px;padding:24px;box-shadow:0 3px 12px rgba(15,41,66,.06)}
+  .dots{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap}
+  .dot{width:22px;height:6px;border-radius:4px;background:var(--bg);transition:.2s}
+  .dot.done{background:var(--green)}.dot.current{background:var(--brand)}
+  .q-text{font-size:1.18rem;font-weight:700;margin-bottom:16px}
+  .q-visual{margin:0 0 16px;text-align:center}
+  .options{display:grid;gap:10px}
+  .opt{text-align:left;background:var(--bg);border:2px solid transparent;padding:13px 16px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:.12s}
+  .opt:hover{border-color:var(--brand)}
+  .opt.correct{background:#dcfce7;border-color:var(--green);animation:pop .3s}
+  .opt.wrong{background:#fee2e2;border-color:var(--red)}
+  .feedback{margin-top:14px;font-weight:700;min-height:22px}
+  .feedback.good{color:var(--green)}.feedback.bad{color:var(--red)}
+  .next-btn{margin-top:16px;background:var(--brand);color:#fff;border:none;padding:11px 24px;border-radius:14px;font-weight:800;cursor:pointer;font-size:1rem;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+  .next-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+  .next-btn:disabled{opacity:.4;cursor:not-allowed}
+  .result{text-align:center;padding:18px}
+  .result .score{font-size:2.8rem;font-weight:800;color:var(--brand);animation:pop .4s}
+  .hidden{display:none}
+  svg{max-width:100%}
+
+  /* practice */
+  .level-chip{display:inline-block;background:var(--teal);color:#fff;font-weight:800;font-size:.78rem;padding:4px 12px;border-radius:12px}
+  .practice-hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;font-weight:800}
+
+  /* subtle mascot */
+  .mascot{position:fixed;bottom:16px;right:16px;z-index:60;display:flex;align-items:flex-end;gap:8px;pointer-events:none}
+  .mascot .bubble{background:#fff;border:2px solid var(--brand);border-radius:12px;padding:7px 11px;font-weight:700;font-size:.82rem;max-width:170px;box-shadow:0 4px 14px rgba(15,41,66,.15);opacity:0;transform:translateY(8px);transition:.25s}
+  .mascot .bubble.show{opacity:1;transform:none}
+  .mascot .duck{width:48px;opacity:.9}
+
+  .game-card{background:var(--card);border-radius:16px;padding:22px;box-shadow:0 3px 12px rgba(15,41,66,.06)}
+  .game-hud{display:flex;justify-content:space-between;font-weight:800;margin-bottom:14px;font-size:1.02rem;flex-wrap:wrap;gap:6px}
+  .timer-bar{height:10px;background:var(--bg);border-radius:8px;overflow:hidden;margin-bottom:16px}
+  .timer-bar>span{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width .9s linear}
+  .nl-track{position:relative;height:70px;background:#fff;border-radius:12px;margin:14px 0;cursor:crosshair;box-shadow:inset 0 0 0 2px var(--line)}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-bottom:22px}
+  .dash-tile{background:var(--card);border-radius:16px;padding:16px;text-align:center;box-shadow:0 3px 12px rgba(15,41,66,.06)}
+  .dash-tile .big{font-size:1.9rem;font-weight:800;color:var(--brand)}
+  .dash-tile .lbl{font-size:.76rem;color:var(--muted)}
+  .badge-shelf{display:flex;gap:10px;flex-wrap:wrap}
+  .badge{padding:8px 14px;border-radius:12px;font-weight:800;font-size:.85rem;color:#fff}
+  .badge.locked{background:#cbd5e1}
+
+  .cert{background:#fffdf7;border:6px double var(--amber);border-radius:16px;padding:30px;text-align:center;max-width:600px;margin:0 auto}
+  .cert h2{color:#c2560c;font-size:1.8rem;margin-bottom:6px}
+  .cert .who{font-size:1.5rem;color:var(--brand);font-weight:800;margin:10px 0;border-bottom:2px dashed var(--line);display:inline-block;padding:0 20px 4px}
+
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:90}
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:95;background:rgba(15,41,66,.5);padding:16px}
+  .modal .box{background:#fff;border-radius:20px;padding:30px 34px;text-align:center;animation:pop .5s;max-width:460px}
+  .modal .box .big{font-size:3rem}
+  .modal .box h3{font-size:1.5rem;color:var(--brand);margin:6px 0}
+  .modal .box button{margin-top:14px;background:var(--brand);color:#fff;border:none;padding:11px 26px;border-radius:14px;font-weight:800;cursor:pointer}
+  @media print{header,.mascot,.back-link,#confetti{display:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <div class="logo" onclick="showHome()">➕ MathQuest <small>GRADES 4–6</small></div>
+    <button class="tab-btn active" data-tab="home" onclick="showHome()">Home</button>
+    <button class="tab-btn" data-tab="practice" onclick="showPage('practice')">✨ Practice</button>
+    <button class="tab-btn" data-tab="arcade" onclick="showPage('arcade')">🎮 Arcade</button>
+    <button class="tab-btn" data-tab="dash" onclick="showPage('dash')">📊 Progress</button>
+    <span class="levelwrap"><span class="ring"><svg width="38" height="38"><circle cx="19" cy="19" r="15" fill="none" stroke="#e2e8f0" stroke-width="5"/><circle id="xpring" cx="19" cy="19" r="15" fill="none" stroke="#0ea5e9" stroke-width="5" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="94.2"/></svg><span class="lvl" id="lvl">1</span></span></span>
+    <span class="pill streak-pill">🔥 <span id="streak">0</span></span>
+    <span class="pill xp-pill">⭐ <span id="xp">0</span></span>
+    <button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+  </nav>
+</header>
+
+<main>
+  <section id="home" class="page active"></section>
+  <section id="grade" class="page"></section>
+  <section id="unit" class="page"></section>
+  <section id="lesson" class="page"></section>
+  <section id="quiz" class="page quiz-box" style="margin-top:8px"></section>
+  <section id="placement" class="page"></section>
+  <section id="practice" class="page"></section>
+  <section id="arcade" class="page">
+    <h2 class="section-title">🎮 Arcade</h2>
+    <p class="sub">Quick games to sharpen your skills. Earn XP and chase high scores!</p>
+    <div id="arcade-menu" class="cards"></div>
+    <div id="arcade-game" class="hidden" style="margin-top:16px"></div>
+  </section>
+  <section id="dash" class="page"></section>
+</main>
+
+<div class="mascot"><div class="bubble" id="duck-bubble"></div>
+  <svg class="duck" id="duck" viewBox="0 0 100 100"></svg>
+</div>
+<canvas id="confetti"></canvas>
+<div class="modal" id="modal"><div class="box" id="modal-box"></div></div>
+
+<script src="content.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
