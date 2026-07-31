@@ -96,10 +96,24 @@
   .done-check{color:var(--green);font-weight:800;margin-left:4px}
 
   .lesson-box{background:var(--card);border-radius:16px;padding:24px;box-shadow:0 3px 12px rgba(15,41,66,.06);margin-bottom:16px}
-  .lesson-box h3{margin-bottom:10px;color:var(--brand)}
+  .lesson-box h3{margin-bottom:10px;color:var(--brand);font-size:1.5rem}
   .lesson-box p{margin-bottom:12px}
+  .teach{font-size:1.02rem;line-height:1.7}
+  .teach p{margin-bottom:14px}
+  .ls-sub{margin:22px 0 8px;color:var(--brand-d);font-size:1.08rem;border-top:2px solid var(--line);padding-top:16px}
+  .pv-chart{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+  .pv-col{background:var(--bg);border-radius:10px;padding:10px 14px;text-align:center;min-width:78px}
+  .pv-col .pv-place{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .pv-col .pv-digit{display:block;font-size:1.8rem;font-weight:800;color:var(--brand)}
+  .pv-col .pv-val{display:block;font-size:.82rem;color:var(--text);font-weight:700}
+  .figrow{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0;font-weight:800;color:var(--brand);font-size:1.15rem;align-items:center}
+  .numbig{text-align:center;font-size:1.2rem;font-weight:800;color:var(--brand-d);margin:12px 0}
   .keybox{background:#fff7ed;border-left:5px solid var(--amber);padding:12px 16px;border-radius:10px;margin:14px 0}
   .keybox b{color:#c2560c}
+  .watchout{background:#fef2f2;border-left:5px solid var(--red);padding:12px 16px;border-radius:10px;margin:14px 0}
+  .watchout b{color:#b91c1c}
+  .reallife{background:#eff6ff;border-left:5px solid var(--brand);padding:12px 16px;border-radius:10px;margin:14px 0}
+  .reallife b{color:var(--brand-d)}
   .playground{background:var(--bg);border-radius:14px;padding:20px;margin:16px 0}
   .playground h4{margin-bottom:10px;text-align:center}
   .ctrl-btn{background:var(--brand);color:#fff;border:none;width:38px;height:38px;border-radius:50%;font-size:1.2rem;cursor:pointer;margin:0 4px}
@@ -129,6 +143,8 @@
   .opt.wrong{background:#fee2e2;border-color:var(--red)}
   .feedback{margin-top:14px;font-weight:700;min-height:22px}
   .feedback.good{color:var(--green)}.feedback.bad{color:var(--red)}
+  .explain{background:var(--bg);border-left:4px solid var(--brand);border-radius:8px;padding:10px 14px;margin-top:8px;font-weight:600;color:var(--text);font-size:.92rem;line-height:1.55}
+  .explain b{color:var(--brand-d)}
   .next-btn{margin-top:16px;background:var(--brand);color:#fff;border:none;padding:11px 24px;border-radius:14px;font-weight:800;cursor:pointer;font-size:1rem;box-shadow:0 4px 0 rgba(0,0,0,.12)}
   .next-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
   .next-btn:disabled{opacity:.4;cursor:not-allowed}
@@ -171,6 +187,44 @@
   .modal .box h3{font-size:1.5rem;color:var(--brand);margin:6px 0}
   .modal .box button{margin-top:14px;background:var(--brand);color:#fff;border:none;padding:11px 26px;border-radius:14px;font-weight:800;cursor:pointer}
   @media print{header,.mascot,.back-link,#confetti{display:none!important}}
+
+  /* avatar */
+  .nav-av{font-size:1.4rem;cursor:pointer;line-height:1;padding:2px 4px;border-radius:10px;transition:.15s}
+  .nav-av:hover{background:var(--bg);transform:scale(1.1)}
+  .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+  .av-cell{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center;cursor:pointer;transition:.15s}
+  .av-cell:hover{transform:translateY(-3px);border-color:var(--brand)}
+  .av-cell.sel{border-color:var(--brand);box-shadow:0 0 0 3px rgba(14,165,233,.2)}
+  .av-cell.locked{opacity:.55;cursor:not-allowed}
+  .av-cell .av-emoji{font-size:2rem;display:block}
+  .av-cell .av-name{font-size:.68rem;color:var(--muted);font-weight:700;display:block;margin-top:2px}
+  .av-cell .av-lock{font-size:.62rem;color:var(--coral);font-weight:800;display:block}
+
+  /* accessibility: text size */
+  body.ts-large{font-size:1.15rem}
+  body.ts-small{font-size:.9rem}
+  /* read-aloud button */
+  .speak-btn{border:none;background:var(--bg);color:var(--brand);border-radius:10px;padding:5px 10px;font-weight:800;cursor:pointer;font-size:.8rem;margin-bottom:8px}
+  .speak-btn:hover{background:var(--brand);color:#fff}
+  /* colorblind-safe palette override + icons */
+  body.cb{--brand:#0072B2;--brand-d:#005b8f;--teal:#009E73;--sky:#56B4E9;--coral:#D55E00;--amber:#E69F00;--green:#009E73;--red:#D55E00}
+  body.cb .opt.correct::after{content:" ✓";font-weight:800}
+  body.cb .opt.wrong::after{content:" ✗";font-weight:800}
+  body.cb .feedback.good::before{content:"✓ "}
+  body.cb .feedback.bad::before{content:"✗ "}
+  .set-row{margin:14px 0}
+  .set-row h4{margin-bottom:6px}
+  .set-btn{border:2px solid var(--line);background:var(--card);border-radius:10px;padding:7px 14px;font-weight:800;cursor:pointer;margin:3px}
+  .set-btn.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+  /* balloon pop */
+  .balloon-field{position:relative;height:340px;background:linear-gradient(#eaf6ff,#f7fbff);border-radius:14px;overflow:hidden;margin:10px 0}
+  .balloon{position:absolute;width:66px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;cursor:pointer;font-size:1.1rem;box-shadow:inset -6px -6px 0 rgba(0,0,0,.08);transition:transform .1s}
+  .balloon:active{transform:scale(.9)}
+  .balloon::after{content:"";position:absolute;bottom:-8px;left:50%;width:2px;height:10px;background:#bbb}
+  .tf-btns{display:flex;gap:14px;justify-content:center;margin-top:16px}
+  .tf-btn{flex:1;max-width:180px;border:none;border-radius:16px;padding:22px;font-size:1.4rem;font-weight:800;color:#fff;cursor:pointer}
+  .tf-true{background:var(--green)}.tf-false{background:var(--red)}
 </style>
 </head>
 <body>
@@ -183,9 +237,11 @@
     <button class="tab-btn" data-tab="arcade" onclick="showPage('arcade')">🎮 Arcade</button>
     <button class="tab-btn" data-tab="dash" onclick="showPage('dash')">📊 Progress</button>
     <span class="levelwrap"><span class="ring"><svg width="38" height="38"><circle cx="19" cy="19" r="15" fill="none" stroke="#e2e8f0" stroke-width="5"/><circle id="xpring" cx="19" cy="19" r="15" fill="none" stroke="#0ea5e9" stroke-width="5" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="94.2"/></svg><span class="lvl" id="lvl">1</span></span></span>
+    <span class="nav-av" id="nav-av" title="Your avatar" onclick="showPage('dash')">🦆</span>
     <span class="pill streak-pill">🔥 <span id="streak">0</span></span>
     <span class="pill xp-pill">⭐ <span id="xp">0</span></span>
     <button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+    <button class="mute-btn" id="setBtn" onclick="openSettings()" title="Settings">⚙️</button>
   </nav>
 </header>
 

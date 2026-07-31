@@ -6,13 +6,16 @@ const gorder=['g4','g5','g6'];
 
 /* ---------------- STATE + SAVE ---------------- */
 let xp=0, streak=0, muted=false;
-let progress={ sections:{}, tests:{}, grades:{}, rec:{}, best:{speed:0,drop:0,match:0}, name:"" };
+let progress={ sections:{}, tests:{}, grades:{}, rec:{}, best:{speed:0,drop:0,match:0,balloon:0,tf:0}, name:"", avatar:"🦆", settings:{text:"normal",cb:false,read:false} };
 let stats={answered:0,correct:0};
 
 function save(){ try{localStorage.setItem('mathquest_g46',JSON.stringify({xp,streak,progress,stats}));}catch(e){} }
 function load(){ try{const d=JSON.parse(localStorage.getItem('mathquest_g46'));
   if(d){xp=d.xp||0;streak=d.streak||0;progress=Object.assign(progress,d.progress||{});stats=Object.assign(stats,d.stats||{});}}catch(e){}
   if(!streak)streak=1;
+  progress.best=Object.assign({speed:0,drop:0,match:0,balloon:0,tf:0},progress.best||{});
+  progress.settings=Object.assign({text:"normal",cb:false,read:false},progress.settings||{});
+  if(!progress.avatar)progress.avatar="🦆";
 }
 const skey=(g,u,s)=>g+'|'+u+'|'+s;
 
@@ -312,18 +315,22 @@ function openUnit(gid,ui){sfx.click();const G=GRADES[gid],u=G.units[ui];
 /* ---- LESSON PAGE ---- */
 function openLesson(gid,ui,si){sfx.click();const s=GRADES[gid].units[ui].sections[si];
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('lesson').classList.add('active');window.scrollTo(0,0);
-  const ivHtml=s.iv?IV[s.iv].html:'';
-  const ex=s.example?`<div class="example"><h4>💡 Worked Example: ${s.example.title}</h4>
-    <div id="ex-steps">${s.example.steps.map((st,i)=>`<div class="step" data-i="${i}">${i+1}. ${st}</div>`).join('')}</div>
-    <button class="hintbtn" id="ex-btn" onclick="nextStep()">Show me how →</button></div>`:'';
+  const exs=s.examples||(s.example?[s.example]:[]);
+  const exHtml=exs.length?`<h4 class="ls-sub">✏️ Worked examples</h4>`+exs.map((ex,k)=>`<div class="example"><h4>Example ${exs.length>1?(k+1):''}: ${ex.title}</h4>
+    <div id="ex-steps-${k}">${ex.steps.map(st=>`<div class="step">${st}</div>`).join('')}</div>
+    <button class="hintbtn" id="ex-btn-${k}" onclick="revealStep(${k})">Show me step 1 →</button></div>`).join(''):'';
+  const ivHtml=s.iv?`<h4 class="ls-sub">🎮 Try it yourself</h4>${IV[s.iv].html}`:'';
   $('lesson').innerHTML=`<div class="lesson-box"><button class="back-link" onclick="openUnit('${gid}',${ui})">← Back to unit</button>
-    <h3>${s.title}</h3>${s.teach}${ivHtml}${ex}
-    <button class="go-btn" style="background:var(--green);margin-top:8px" onclick="startQuiz('${gid}',${ui},${si})">Take the quiz →</button></div>`;
+    <h3>${s.title}</h3>${speakCtl()}<div class="teach">${s.teach}</div>${exHtml}${ivHtml}
+    <div style="text-align:center;margin-top:18px"><button class="go-btn" style="background:var(--green)" onclick="startQuiz('${gid}',${ui},${si})">✅ I'm ready — take the quiz →</button></div></div>`;
   if(s.iv&&IV[s.iv])IV[s.iv].init();
-  window._exStep=0;
+  window._read=s.title+'. '+stripTags(s.teach);
+  window._exCounters={};
 }
-function nextStep(){const steps=document.querySelectorAll('#ex-steps .step');if(window._exStep<steps.length){steps[window._exStep].classList.add('show');window._exStep++;sfx.click();}
-  if(window._exStep>=steps.length)$('ex-btn').style.display='none';}
+function revealStep(k){window._exCounters=window._exCounters||{};let c=window._exCounters[k]||0;
+  const steps=document.querySelectorAll('#ex-steps-'+k+' .step');const btn=document.getElementById('ex-btn-'+k);
+  if(c<steps.length){steps[c].classList.add('show');c++;window._exCounters[k]=c;sfx.click();}
+  if(c>=steps.length){if(btn)btn.style.display='none';}else if(btn)btn.textContent='Show me step '+(c+1)+' →';}
 
 /* ==========================================================================
    QUIZ / TEST / PLACEMENT ENGINE
@@ -340,20 +347,23 @@ function renderQ(){const q=Q.list[Q.i];Q.answered=false;
     <div style="font-weight:800;color:var(--muted);margin-bottom:6px">${Q.cfg.title}</div>
     <div class="dots">${dots}</div>
     <div class="q-text">${Q.i+1}. ${q.q}</div>
+    ${speakCtl()}
     <div class="options" id="q-opts">${q.o.map((o,k)=>`<button class="opt" onclick="pick(${k})">${o}</button>`).join('')}</div>
     <div class="feedback" id="q-fb"></div>
     <button class="next-btn" id="q-next" disabled onclick="advance()">${Q.i===Q.list.length-1?'See results →':'Next →'}</button>`;
+  autoRead((Q.i+1)+'. '+q.q);
 }
 function pick(k){if(Q.answered)return;Q.answered=true;const q=Q.list[Q.i];
   stats.answered++;const opts=document.querySelectorAll('#q-opts .opt');
   opts.forEach((b,idx)=>{if(idx===q.a)b.classList.add('correct');if(idx===k&&k!==q.a)b.classList.add('wrong');b.style.pointerEvents='none';});
   const fb=$('q-fb');
   if(k===q.a){Q.score++;stats.correct++;addXP(10);sfx.correct();
-    fb.textContent='✅ '+(q.why||'Correct!');fb.className='feedback good';}
+    fb.innerHTML='<span class="feedback good">✅ Correct!</span>'+(explainHTML(q)?'<div class="explain">'+explainHTML(q)+'</div>':'');fb.className='';}
   else{Q.wrong.push(q);sfx.wrong();
-    fb.innerHTML='❌ Answer: <b>'+q.o[q.a]+'</b>. '+(q.why||'');fb.className='feedback bad';}
+    fb.innerHTML='<span class="feedback bad">❌ Not quite — the correct answer is <b>'+q.o[q.a]+'</b>.</span>'+(explainHTML(q)?'<div class="explain"><b>How to solve it:</b> '+explainHTML(q)+'</div>':'');fb.className='';}
   $('q-next').disabled=false;save();
 }
+function explainHTML(q){return q.explain||q.why||'';}
 function advance(){if(Q.i<Q.list.length-1){Q.i++;renderQ();}else finish();}
 function finish(){const n=Q.list.length,pass=Q.score>=Q.cfg.passMark;
   Q.cfg.onPass(Q.score,n,pass);
@@ -368,8 +378,9 @@ function resultScreen(title,score,total,good,back,extraBtn){
     ${good?'<p>🌟 Great job!</p>':'<p>Keep practicing — you are getting there!</p>'}
     ${canReview?`<button class="next-btn" style="background:var(--blue)" onclick="reviewWrong()">🔁 Review my mistakes (${Q.wrong.length})</button>`:''}
     ${extraBtn||''}
-    <button class="next-btn" onclick="(${back?back.toString():'showHome'})()">Continue</button></div>`;
+    <button class="next-btn" onclick="quizContinue()">Continue</button></div>`;
 }
+function quizContinue(){sfx.click();if(Q.cfg&&typeof Q.cfg.back==='function')Q.cfg.back();else showHome();}
 
 /* ---- launchers ---- */
 function startQuiz(gid,ui,si){const s=GRADES[gid].units[ui].sections[si];const back=()=>openUnit(gid,ui);
@@ -383,11 +394,11 @@ function startTest(gid,ui){const u=GRADES[gid].units[ui];const back=()=>openUnit
       save();resultScreen(pass?'Unit Test passed! 🏅':'Not quite — review and retry!',score,total,pass,back);}});}
 function startPlacement(gid){const G=GRADES[gid];const back=()=>openGrade(gid);
   runQuiz({questions:G.placement,title:G.name+' — Placement Check',passMark:0,back,
-    onPass:(score,total)=>{ // recommend first unit whose question was missed
-      let rec=G.units.length-1;for(let k=0;k<Q.list.length;k++){/*noop*/}
-      // determine using wrong list positions
-      let firstMiss=-1;G.placement.forEach((q,k)=>{if(Q.wrong.includes(q)&&firstMiss<0)firstMiss=k;});
-      rec=firstMiss<0?0:Math.min(firstMiss,G.units.length-1);
+    onPass:(score,total)=>{ // recommend the earliest unit the student missed (by q.u tag)
+      let recUnit=G.units.length;
+      G.placement.forEach((q,k)=>{if(Q.wrong.includes(q)){const uu=(q.u!==undefined?q.u:Math.min(k,G.units.length-1));if(uu<recUnit)recUnit=uu;}});
+      let firstMiss=recUnit<G.units.length?recUnit:-1;
+      let rec=firstMiss<0?0:Math.min(firstMiss,G.units.length-1);
       progress.rec[gid]=rec;save();
       const msg=firstMiss<0?"Wow, you aced it! You can jump in anywhere — we suggest Unit 1 to warm up.":"Great — we recommend starting at <b>"+G.units[rec].name+"</b>. Earlier units are marked as review.";
       $('quiz').innerHTML=`<div class="result"><div class="big" style="font-size:2.5rem">🦆</div><div class="score">${score}/${total}</div>
@@ -421,7 +432,9 @@ function allQ(){const list=[];gorder.forEach(g=>GRADES[g].units.forEach(u=>{u.se
 function resetArcade(){$('arcade-menu').innerHTML=`
    <div class="card" onclick="startSpeed()" style="border-color:var(--purple)"><div class="icon">⚡</div><h3>Speed Round</h3><p>Answer as many as you can in 60s.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.speed}</small></div>
    <div class="card" onclick="startDrop()" style="border-color:var(--green)"><div class="icon">🎯</div><h3>Number-Line Drop</h3><p>Tap where the answer lands.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.drop}</small></div>
-   <div class="card" onclick="startMatch()" style="border-color:var(--pink)"><div class="icon">🍕</div><h3>Fraction Match</h3><p>Pick the equal fraction fast.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.match}</small></div>`;
+   <div class="card" onclick="startMatch()" style="border-color:var(--pink)"><div class="icon">🍕</div><h3>Fraction Match</h3><p>Pick the equal fraction fast.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.match}</small></div>
+   <div class="card" onclick="startBalloon()" style="border-color:var(--coral)"><div class="icon">🎈</div><h3>Balloon Pop</h3><p>Pop the balloon with the right answer. Build combos!</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.balloon}</small></div>
+   <div class="card" onclick="startTF()" style="border-color:var(--amber)"><div class="icon">⚡</div><h3>True or False</h3><p>Is it right? Tap fast, chain combos, 60 seconds.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.tf}</small></div>`;
   $('arcade-menu').classList.remove('hidden');$('arcade-game').classList.add('hidden');$('arcade-game').innerHTML='';if(gameTimer){clearInterval(gameTimer);gameTimer=null;}}
 let gameTimer=null;
 function openGame(){$('arcade-menu').classList.add('hidden');$('arcade-game').classList.remove('hidden');}
@@ -473,6 +486,7 @@ function renderDash(){const acc=stats.answered?Math.round(stats.correct/stats.an
    </div>
    <h2 class="section-title">Grade progress</h2>
    <div class="dash-grid">${gorder.map(g=>`<div class="dash-tile"><div class="big" style="color:${GRADES[g].accent}">${gradeProgress(g)}%</div><div class="lbl">${GRADES[g].name} ${progress.grades[g]?'🏆':''}</div></div>`).join('')}</div>
+   ${avatarSection()}
    <h2 class="section-title">Badges & Trophies</h2>
    <div class="badge-shelf">${badgeShelf()}</div>`;
 }
@@ -496,7 +510,105 @@ function cLoop(){cRun=true;cCtx.clearRect(0,0,cCv.width,cCv.height);cP=cP.filter
 /* ==========================================================================
    INIT
 ========================================================================== */
-load();drawDuck();refreshHUD();renderHome();
+/* ==========================================================================
+   ACCESSIBILITY: settings, text size, colorblind, read-aloud
+========================================================================== */
+function applySettings(){const s=progress.settings;if(!document.body)return;
+  document.body.classList.toggle('ts-large',s.text==='large');
+  document.body.classList.toggle('ts-small',s.text==='small');
+  document.body.classList.toggle('cb',!!s.cb);}
+function openSettings(){sfx.click();const s=progress.settings;
+  $('modal-box').innerHTML=`<div class="big">⚙️</div><h3>Settings</h3>
+   <div class="set-row"><h4>Text size</h4>
+     <button class="set-btn ${s.text==='small'?'on':''}" onclick="setText('small')">Small</button>
+     <button class="set-btn ${s.text==='normal'?'on':''}" onclick="setText('normal')">Normal</button>
+     <button class="set-btn ${s.text==='large'?'on':''}" onclick="setText('large')">Large</button></div>
+   <div class="set-row"><h4>Colorblind-friendly mode</h4>
+     <button class="set-btn ${s.cb?'on':''}" onclick="toggleCB()">${s.cb?'On ✓':'Off'}</button>
+     <p style="font-size:.78rem;color:var(--muted);margin-top:4px">Colorblind-safe colors + ✓/✗ marks on answers.</p></div>
+   <div class="set-row"><h4>Read questions aloud automatically</h4>
+     <button class="set-btn ${s.read?'on':''}" onclick="toggleRead()">${s.read?'On ✓':'Off'}</button>
+     <button class="set-btn" onclick="readCurrent()">🔊 Test voice</button></div>
+   <button id="modal-ok" onclick="closeModal()">Done</button>`;
+  $('modal').style.display='flex';}
+function closeModal(){$('modal').style.display='none';sfx.click();}
+function setText(v){progress.settings.text=v;applySettings();save();openSettings();}
+function toggleCB(){progress.settings.cb=!progress.settings.cb;applySettings();save();openSettings();}
+function toggleRead(){progress.settings.read=!progress.settings.read;save();openSettings();}
+function speak(t){if(!t)return;try{if(typeof window!=='undefined'&&window.speechSynthesis){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(t));u.rate=.95;window.speechSynthesis.speak(u);}}catch(e){}}
+function readCurrent(){speak(window._read);}
+function autoRead(t){window._read=t;if(progress.settings.read)speak(t);}
+function stripTags(h){return String(h).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();}
+function speakCtl(){return `<button class="speak-btn" onclick="readCurrent()">🔊 Read aloud</button>`;}
+
+/* ==========================================================================
+   AVATARS / UNLOCKABLES
+========================================================================== */
+const AVATARS=[
+ {e:"🦆",name:"Ducky",lvl:1},{e:"🐱",name:"Cat",lvl:1},{e:"🐶",name:"Pup",lvl:2},
+ {e:"🦊",name:"Fox",lvl:3},{e:"🐼",name:"Panda",lvl:4},{e:"🐸",name:"Frog",lvl:5},
+ {e:"🦉",name:"Owl",lvl:6},{e:"🐧",name:"Penguin",lvl:7},{e:"🦁",name:"Lion",lvl:8},
+ {e:"🦄",name:"Unicorn",lvl:10},{e:"🐲",name:"Dragon",lvl:12},{e:"🤖",name:"Robot",lvl:15},
+ {e:"👾",name:"Alien",lvl:18},{e:"🚀",name:"Rocket",lvl:20}
+];
+function avUnlocked(a){return level()>=a.lvl;}
+function updateNavAvatar(){const el=$('nav-av');if(el)el.textContent=progress.avatar||"🦆";}
+function pickAvatar(e){const a=AVATARS.find(x=>x.e===e);if(!a)return;if(!avUnlocked(a)){sfx.wrong();return;}progress.avatar=e;updateNavAvatar();sfx.correct();save();renderDash();}
+function avatarSection(){
+  const cells=AVATARS.map(a=>{const un=avUnlocked(a),sel=progress.avatar===a.e;
+    return `<div class="av-cell ${sel?'sel':''} ${un?'':'locked'}" onclick="${un?`pickAvatar('${a.e}')`:''}">
+      <span class="av-emoji">${un?a.e:'🔒'}</span><span class="av-name">${a.name}</span>
+      ${un?'':`<span class="av-lock">Level ${a.lvl}</span>`}</div>`;}).join('');
+  return `<h2 class="section-title">Your avatar</h2><p class="sub">Unlock more by leveling up. Current level: ${level()}.</p><div class="avatar-grid">${cells}</div>`;
+}
+
+/* ==========================================================================
+   NEW MINIGAMES  (generator-fed) + combos
+========================================================================== */
+function genQ(L){return GEN[pickOne(allUnitIds())](L);}
+function startBalloon(){sfx.click();openGame();let time=60,sc=0,combo=0,lvl=1;
+  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🎈 Balloon Pop</span><span>⏱ <span id="bl-t">60</span>s</span><span>Score: <span id="bl-s">0</span></span></div>
+    <div class="timer-bar"><span id="bl-bar"></span></div>
+    <div class="q-text" id="bl-q" style="text-align:center"></div>
+    <div class="balloon-field" id="bl-field"></div>
+    <p id="bl-fb" class="feedback" style="text-align:center"></p><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
+  const cols=['#ef4444','#0ea5e9','#22c55e','#f59e0b','#fb7185','#14b8a6'];
+  function round(){const q=genQ(lvl);$('bl-q').textContent=q.q;
+    const field=$('bl-field');field.innerHTML='';
+    const idx=q.o.map((_,i)=>i);shuffle(idx);
+    idx.forEach((oi,pos)=>{const b=document.createElement('div');b.className='balloon';
+      b.style.background=cols[pos%cols.length];b.style.left=(8+pos*23)+'%';b.style.top=(20+((pos*37)%55))+'%';
+      b.textContent=q.o[oi];
+      b.onclick=()=>{ if(oi===q.a){combo++;const pts=10+Math.min(combo,5)*2;sc+=pts;lvl=Math.min(3,1+Math.floor(combo/4));addXP(2);sfx.correct();$('bl-fb').textContent='Pop! +'+pts+(combo>1?'  🔥x'+combo:'');$('bl-fb').className='feedback good';}
+        else{combo=0;sfx.wrong();$('bl-fb').textContent='Oops — that was '+q.o[q.a];$('bl-fb').className='feedback bad';}
+        $('bl-s').textContent=sc;round();};
+      field.appendChild(b);});}
+  round();
+  gameTimer=setInterval(()=>{time--;$('bl-t').textContent=time;$('bl-bar').style.width=(time/60*100)+'%';if(time<=0){clearInterval(gameTimer);gameTimer=null;endGame('balloon',sc,'🎈 Balloon Pop');}},1000);
+}
+function tfItem(L){let q,tries=0;do{q=genQ(L);tries++;}while(!q.q.trim().endsWith('=')&&tries<30);
+  if(!q.q.trim().endsWith('=')){const a=rint(2,9),b=rint(2,9);q={q:a+' × '+b+' =',o:[String(a*b)],a:0};}
+  const correct=q.o[q.a];let shown=correct,isTrue=true;
+  if(Math.random()<.5){const w=q.o.filter((o,i)=>i!==q.a);if(w.length){shown=pickOne(w);isTrue=false;}}
+  return {statement:q.q+' '+shown,isTrue};}
+function startTF(){sfx.click();openGame();let time=60,sc=0,combo=0,lvl=1,cur=null;
+  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>⚡ True or False</span><span>⏱ <span id="tf-t">60</span>s</span><span>Score: <span id="tf-s">0</span></span></div>
+    <div class="timer-bar"><span id="tf-bar"></span></div>
+    <div class="q-text" id="tf-q" style="text-align:center;font-size:1.7rem;padding:14px 0"></div>
+    <div class="tf-btns"><button class="tf-btn tf-true" onclick="tfAns(true)">✓ True</button><button class="tf-btn tf-false" onclick="tfAns(false)">✗ False</button></div>
+    <p id="tf-fb" class="feedback" style="text-align:center"></p><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
+  window._tf={get sc(){return sc;},set sc(v){sc=v;},get combo(){return combo;},set combo(v){combo=v;},get lvl(){return lvl;},set lvl(v){lvl=v;}};
+  function round(){cur=tfItem(lvl);$('tf-q').textContent=cur.statement;}
+  window._tfRound=round;window._tfGet=()=>cur;
+  round();
+  gameTimer=setInterval(()=>{time--;$('tf-t').textContent=time;$('tf-bar').style.width=(time/60*100)+'%';if(time<=0){clearInterval(gameTimer);gameTimer=null;endGame('tf',sc,'⚡ True or False');}},1000);
+}
+function tfAns(ans){const cur=window._tfGet&&window._tfGet();if(!cur)return;const st=window._tf;
+  if(ans===cur.isTrue){st.combo++;const pts=10+Math.min(st.combo,5)*2;st.sc+=pts;st.lvl=Math.min(3,1+Math.floor(st.combo/4));addXP(2);sfx.correct();$('tf-fb').textContent='Correct! +'+pts+(st.combo>1?'  🔥x'+st.combo:'');$('tf-fb').className='feedback good';}
+  else{st.combo=0;sfx.wrong();$('tf-fb').textContent=cur.isTrue?'It was TRUE':'It was FALSE';$('tf-fb').className='feedback bad';}
+  $('tf-s').textContent=st.sc;window._tfRound();}
+
+load();drawDuck();refreshHUD();applySettings();updateNavAvatar();renderHome();
 
 /* ==========================================================================
    QUESTION GENERATOR  (rule-based "AI" — infinite valid questions)
@@ -524,9 +636,12 @@ const GEN={
    return Object.assign({q:`What is the value of the ${d} in ${n.toLocaleString()}?`,
      why:`The ${d} is in the ${['ones','tens','hundreds','thousands','ten-thousands'][place]} place, so it's worth ${val.toLocaleString()}.`},
      mc(val,wrongs));},
- g4u2(L){const hi=[9,12,20][L-1]||12;if(Math.random()<.5){const a=rint(2,hi),b=rint(2,9);
+ g4u2(L){const hi=[9,12,25][L-1]||12;const r=Math.random();
+   if(r<.33){const a=rint(2,hi),b=rint(2,9),nm=pickOne(['boxes','baskets','bags','shelves','rows']),it=pickOne(['apples','books','marbles','pencils','cookies']);
+     return Object.assign({q:`There are ${a} ${nm} with ${b} ${it} in each. How many ${it} in all?`,why:`${a} × ${b} = ${a*b}.`},mc(a*b,[a*b+a,a*b-b,(a+1)*b]));}
+   if(r<.66){const a=rint(2,hi),b=rint(2,9);
      return Object.assign({q:`${a} × ${b} =`,why:`${a} groups of ${b} = ${a*b}.`},mc(a*b,[a*b+a,a*b-b,(a+1)*b]));}
-   const d=rint(2,9),q=rint(2,hi),n=d*q;return Object.assign({q:`${n} ÷ ${d} =`,why:`${d} × ${q} = ${n}.`},mc(q,[q+1,q-1,q+2]));},
+   const d=rint(2,9),q=rint(2,hi),n=d*q;return Object.assign({q:`${n} ${pickOne(['cookies','stickers','marbles'])} shared equally among ${d} kids — each gets:`,why:`${n} ÷ ${d} = ${q}.`},mc(q,[q+1,q-1,q+2]));},
  g4u3(L){const d=rint(2,[5,8,10][L-1]||8);const n=rint(1,d-1),k=rint(1,d-n);
    return Object.assign({q:`${frac(n,d)} + ${frac(k,d)} =`,why:`Same bottom, so add tops: ${n}+${k}=${n+k}, keep ${d}.`},
      mc(frac(n+k,d),[frac(n+k,d+1),frac(n+k+1,d),frac(n+k-1,d)]));},
@@ -542,6 +657,8 @@ const GEN={
      why:`Look at the hundredths (${b}). ${b>=5?'5 or more → round up':'less than 5 → round down'} → ${rt}.`},
      mc(rt,[((tenths+1)/10).toFixed(1),whole+'.0',numStr]));},
  g5u2(L){const a=rint(1,9),b=rint(1,9);const prod=(a*b)/100;
+   if(Math.random()<.4){const cents=rint(15,95),price=cents/100,qty=rint(2,[4,6,9][L-1]||6),tot=price*qty,it=pickOne(['pencils','stickers','erasers','stamps']);
+     return Object.assign({q:`One item costs $${price.toFixed(2)}. How much for ${qty} ${it}?`,why:`${qty} × $${price.toFixed(2)} = $${tot.toFixed(2)}.`},mc('$'+tot.toFixed(2),['$'+(tot*10).toFixed(2),'$'+(tot/10).toFixed(2),'$'+(price+qty).toFixed(2)]));}
    return Object.assign({q:`0.${a} × 0.${b} =`,why:`${a}×${b}=${a*b}, and 2 decimal places → ${prod.toFixed(2)}.`},
      mc(prod.toFixed(2),[(a*b/10).toFixed(1),(a*b).toString(),(a*b/1000).toFixed(3)]));},
  g5u3(L){if(Math.random()<.5){const a=rint(2,6),b=rint(2,6);
@@ -559,15 +676,19 @@ const GEN={
  g6u2(L){if(Math.random()<.5){let a,b;do{a=rint(-9,9);b=rint(-9,9);}while(a===0||b===0);
      return Object.assign({q:`${a} + ${b<0?'('+b+')':b} =`,why:`Move ${b<0?'left':'right'} ${Math.abs(b)} from ${a} → ${a+b}.`},mc(a+b,[a-b,a+b+1,a+b-1]));}
    const n=rint(2,6),u=rint(2,6);return Object.assign({q:`${n} ÷ ${frac(1,u)} =`,why:`Keep-change-flip: ${n} × ${u} = ${n*u}.`},mc(n*u,[n+u,n,n*u-u]));},
- g6u3(L){const r=Math.random();if(r<.34){const q=rint(2,[9,15,20][L-1]||15),x=rint(1,15),rr=x+q;
+ g6u3(L){const r=Math.random();
+   if(r<.25){const q=rint(2,[9,15,20][L-1]||15),x=rint(1,15),rr=x+q,nm=pickOne(['Maya','Leo','Ava','Sam']);
+     return Object.assign({q:`${nm} had some stickers, got ${q} more, and now has ${rr}. How many at the start?  (x + ${q} = ${rr})`,why:`${rr} − ${q} = ${x}.`},mc('x = '+x,['x = '+(rr+q),'x = '+rr,'x = '+(x+1)]));}
+   if(r<.45){const q=rint(2,[9,15,20][L-1]||15),x=rint(1,15),rr=x+q;
      return Object.assign({q:`Solve x + ${q} = ${rr}`,why:`Subtract ${q} from both sides: x = ${x}.`},mc('x = '+x,['x = '+(rr+q),'x = '+rr,'x = '+(x+1)]));}
-   if(r<.67){const p=rint(2,6),x=rint(2,9),rr=p*x;return Object.assign({q:`Solve ${p}x = ${rr}`,why:`Divide both sides by ${p}: x = ${x}.`},mc('x = '+x,['x = '+rr,'x = '+(x+1),'x = '+(x>1?x-1:x+2)]));}
+   if(r<.7){const p=rint(2,6),x=rint(2,9),rr=p*x;return Object.assign({q:`Solve ${p}x = ${rr}`,why:`Divide both sides by ${p}: x = ${x}.`},mc('x = '+x,['x = '+rr,'x = '+(x+1),'x = '+(x>1?x-1:x+2)]));}
    const a=rint(2,6),b=rint(2,9),x=rint(2,9);return Object.assign({q:`Evaluate ${a}x + ${b} when x = ${x}`,why:`${a}×${x} + ${b} = ${a*x+b}.`},mc(a*x+b,[a*x,a*x+b+1,a*x+2*b]));},
  g6u4(L){if(Math.random()<.5){const b=rint(2,12),h=rint(2,12);const ar=b*h/2;
      return Object.assign({q:`Area of a triangle with base ${b} and height ${h}?`,why:`½ × ${b} × ${h} = ${ar}.`},mc(ar,[b*h,b+h,ar+b]));}
    const l=rint(1,6),w=rint(1,6),h=rint(1,6);return Object.assign({q:`Volume of a ${l}×${w}×${h} box?`,why:`${l}×${w}×${h} = ${l*w*h}.`},mc(l*w*h,[2*(l*w+l*h+w*h),l+w+h,l*w]));},
  g6u5(L){const n=[3,4,5][L-1]||4;const arr=[];for(let i=0;i<n;i++)arr.push(rint(1,12));const sum=arr.reduce((a,b)=>a+b,0);
-   if(Math.random()<.5&&sum%n===0){return Object.assign({q:`Mean (average) of ${arr.join(', ')}?`,why:`Sum ${sum} ÷ ${n} = ${sum/n}.`},mc(sum/n,[sum,Math.max(...arr),Math.round(sum/n)+1]));}
+   if(Math.random()<.5&&sum%n===0){const ctx=pickOne(['test scores','ages','points scored','temperatures']);
+     return Object.assign({q:`Find the mean of these ${ctx}: ${arr.join(', ')}`,why:`Sum ${sum} ÷ ${n} = ${sum/n}.`},mc(sum/n,[sum,Math.max(...arr),Math.round(sum/n)+1]));}
    const rng=Math.max(...arr)-Math.min(...arr);return Object.assign({q:`Range of ${arr.join(', ')}?`,why:`Biggest ${Math.max(...arr)} − smallest ${Math.min(...arr)} = ${rng}.`},mc(rng,[Math.max(...arr),Math.min(...arr),rng+1]));}
 };
 
@@ -579,10 +700,10 @@ function renderPractice(){
     const btns=G.units.map(u=>`<button class="go-btn ghost" style="margin:4px" onclick="practiceRun(['${u.id}'],'${u.name}')">${u.icon} ${u.name}</button>`).join('');
     return `<div class="lesson-box"><h3 style="color:${G.accent}">${G.emoji} ${G.name}</h3>
       <div>${btns}</div>
-      <button class="go-btn" style="background:${G.accent};margin-top:10px" onclick="practiceRun(${JSON.stringify(G.units.map(u=>u.id))},'${G.name} — Mixed')">🎲 Mixed ${G.name}</button></div>`;}).join('');
+      <button class="go-btn" style="background:${G.accent};margin-top:10px" onclick="practiceRun([${G.units.map(u=>"'"+u.id+"'").join(',')}],'${G.name} — Mixed')">🎲 Mixed ${G.name}</button></div>`;}).join('');
   $('practice').innerHTML=`<h2 class="section-title">✨ Practice (auto-generated)</h2>
     <p class="sub">Unlimited fresh questions that adapt to how you're doing — pick a topic or go mixed. Every answer comes with an explanation.</p>
-    <div style="text-align:center;margin-bottom:16px"><button class="big-btn" style="background:var(--brand);color:#fff" onclick="practiceRun(${JSON.stringify(allUnitIds())},'All Grades — Mixed')">🚀 Mixed practice (all grades)</button></div>
+    <div style="text-align:center;margin-bottom:16px"><button class="big-btn" style="background:var(--brand);color:#fff" onclick="practiceRun([${allUnitIds().map(id=>"'"+id+"'").join(',')}],'All Grades — Mixed')">🚀 Mixed practice (all grades)</button></div>
     ${grades}`;
 }
 function allUnitIds(){const a=[];gorder.forEach(g=>GRADES[g].units.forEach(u=>a.push(u.id)));return a;}
@@ -598,16 +719,18 @@ function nextPractice(){const topic=pickOne(PR.topics);const item=GEN[topic]?GEN
     <div class="quiz-box"><div class="practice-hud"><span>${PR.label}</span>
       <span><span class="level-chip">Level ${PR.level}</span> &nbsp; ✅ ${PR.correct}/${PR.answered} (${acc}%)</span></div>
     <div class="q-text">${item.q}</div>
+    ${speakCtl()}
     <div class="options" id="pr-opts">${item.o.map((o,k)=>`<button class="opt" onclick="prPick(${k})">${o}</button>`).join('')}</div>
     <div class="feedback" id="pr-fb"></div>
     <button class="next-btn" id="pr-next" disabled onclick="nextPractice()">Next question →</button></div>`;
+  autoRead(item.q);
 }
 function prPick(k){if(PR.answered_now)return;PR.answered_now=true;const item=PR.cur;PR.answered++;stats.answered++;
   document.querySelectorAll('#pr-opts .opt').forEach((b,idx)=>{if(idx===item.a)b.classList.add('correct');if(idx===k&&k!==item.a)b.classList.add('wrong');b.style.pointerEvents='none';});
   const fb=$('pr-fb');
   if(k===item.a){PR.correct++;stats.correct++;PR.streak++;addXP(5);sfx.correct();
-    fb.textContent='✅ '+item.why;fb.className='feedback good';
+    fb.innerHTML='<span class="feedback good">✅ Correct!</span>'+(explainHTML(item)?'<div class="explain">'+explainHTML(item)+'</div>':'');fb.className='';
     if(PR.streak>=3&&PR.level<3){PR.level++;PR.streak=0;setTimeout(()=>duckSay('Level up — harder questions! 💪'),200);}}
-  else{PR.streak=0;if(PR.level>1)PR.level--;sfx.wrong();fb.innerHTML='❌ Answer: <b>'+item.o[item.a]+'</b>. '+item.why;fb.className='feedback bad';}
+  else{PR.streak=0;if(PR.level>1)PR.level--;sfx.wrong();fb.innerHTML='<span class="feedback bad">❌ Not quite — the answer is <b>'+item.o[item.a]+'</b>.</span>'+(explainHTML(item)?'<div class="explain"><b>How to solve it:</b> '+explainHTML(item)+'</div>':'');fb.className='';}
   save();$('pr-next').disabled=false;
 }

@@ -43,6 +43,22 @@ Mimics an AI tutor using plain JavaScript (no real ML) — free, offline, instan
 - Sound effects + mute, confetti, level-up popup, animated hero
 - Progress dashboard with per-unit mastery chart
 
+## 📋 Requested next — build list (AWAITING APPROVAL, do not build yet)
+
+**1. Deeper, richer lessons**
+- Lessons should be more in-depth — not just a visual/interactive.
+- Add **Khan Academy–style explanatory paragraphs** that talk through the topic, written in **simple, kid-friendly language** so children actually understand.
+- Provide **multiple worked examples per lesson** (not just one).
+- Make the **UI more efficient/cleaner** for the interactive lessons specifically.
+
+**2. Fix all buttons**
+- Some buttons don't work (e.g. Endless Practice mode, and others).
+- Audit the whole site so **every button is clickable and actually does something**.
+
+**3. Harder, more varied questions**
+- Some questions are too easy — add **harder difficulty**.
+- **Vary the problem types** and get creative — include **word problems**, multi-step problems, etc.
+
 ## 💡 Future ideas (later)
 - Grades 1–3 tracks
 - Adaptive difficulty
