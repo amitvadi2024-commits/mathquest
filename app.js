@@ -3,6 +3,10 @@
 ========================================================================== */
 const $=id=>document.getElementById(id);
 const gorder=['g4','g5','g6'];
+const UNITLABEL={g4u1:"Place Value",g4u2:"Multiply",g4u3:"Fractions",g4u4:"Decimals",g4u5:"Geometry",
+ g5u1:"Place Value",g5u2:"Decimals",g5u3:"Fractions",g5u4:"Volume",g5u5:"Coordinates",
+ g6u1:"Ratios",g6u2:"Numbers",g6u3:"Equations",g6u4:"Geometry",g6u5:"Statistics"};
+function ulabel(u){return UNITLABEL[u.id]||u.code;}
 
 /* ---------------- STATE + SAVE ---------------- */
 let xp=0, streak=0, muted=false;
@@ -26,7 +30,7 @@ function beep(f,d,t,v,w){if(muted)return;const a=audio();if(!a)return;const s=a.
   const o=a.createOscillator(),g=a.createGain();o.type=t||'sine';o.frequency.value=f;
   g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v||.18,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+d);
   o.connect(g);g.connect(a.destination);o.start(s);o.stop(s+d+.02);}
-const sfx={click(){beep(420,.06,'square',.06);},correct(){beep(660,.12,'sine',.18);beep(880,.16,'sine',.18,.1);},
+const sfx={click(){beep(880,.025,'sine',.05);beep(1320,.03,'sine',.03,.015);},correct(){beep(660,.12,'sine',.18);beep(880,.16,'sine',.18,.1);},
   wrong(){beep(200,.22,'sawtooth',.12);},win(){[523,659,784,1047,1319].forEach((f,i)=>beep(f,.2,'triangle',.2,i*.09));},
   level(){[523,659,784,1047].forEach((f,i)=>beep(f,.22,'triangle',.2,i*.11));},tick(){beep(300,.04,'square',.05);}};
 function toggleMute(){muted=!muted;$('muteBtn').textContent=muted?'🔇':'🔊';if(!muted)sfx.click();save();}
@@ -77,6 +81,24 @@ const IV={
    <input type="range" id="pv" min="0" max="99999" value="3482" oninput="ivPlace()">
    <div id="pv-out"></div></div>`,
   init(){ivPlace();}},
+ comparetool:{html:`<div class="playground"><h4>Compare Two Numbers</h4>
+   <label class="fld">Number A: <span id="cmp-a-lbl">2748</span></label><input type="range" id="cmp-a" min="0" max="9999" value="2748" oninput="ivCompare()">
+   <label class="fld">Number B: <span id="cmp-b-lbl">2751</span></label><input type="range" id="cmp-b" min="0" max="9999" value="2751" oninput="ivCompare()">
+   <div id="cmp-out"></div><div class="readout"><div class="chip"><b id="cmp-res">2,748 &lt; 2,751</b><span>comparison</span></div></div></div>`,
+  init(){ivCompare();}},
+ roundline:{html:`<div class="playground"><h4>Rounding Number Line</h4>
+   <label class="fld">Number: <span id="rl-n-lbl">347</span></label><input type="range" id="rl-n" min="0" max="1000" value="347" oninput="ivRound()">
+   <div id="rl-out"></div><div class="readout"><div class="chip"><b id="rl-t">350</b><span>nearest ten</span></div><div class="chip"><b id="rl-h">300</b><span>nearest hundred</span></div></div></div>`,
+  init(){ivRound();}},
+ blocks:{html:`<div class="playground"><h4>Base-Ten Blocks</h4>
+   <label class="fld">Number: <span id="bk-n-lbl">1275</span></label><input type="range" id="bk-n" min="0" max="1999" value="1275" oninput="ivBlocks()">
+   <div id="bk-out" style="text-align:center;overflow:auto"></div>
+   <div class="readout"><div class="chip"><b id="bk-cnt">1 · 2 · 7 · 5</b><span>thousands · hundreds · tens · ones</span></div></div></div>`,
+  init(){ivBlocks();}},
+ forms:{html:`<div class="playground"><h4>Three Forms of a Number</h4>
+   <label class="fld">Number: <span id="fo-n-lbl">5213</span></label><input type="range" id="fo-n" min="0" max="9999" value="5213" oninput="ivForms()">
+   <div id="fo-out"></div></div>`,
+  init(){ivForms();}},
  array:{html:`<div class="playground"><h4>✖️ Multiplication Array</h4>
    <label class="fld">Rows: <span id="ar-r-lbl">4</span></label><input type="range" id="ar-r" min="1" max="10" value="4" oninput="ivArray()">
    <label class="fld">Columns: <span id="ar-c-lbl">6</span></label><input type="range" id="ar-c" min="1" max="10" value="6" oninput="ivArray()">
@@ -162,6 +184,53 @@ function ivPlace(){const n=+$('pv').value;$('pv-lbl').textContent=n;
     rows+=`<div style="display:flex;justify-content:space-between;padding:4px 10px;border-radius:8px;background:${d?'#fff':'#f0edfb'};margin:3px 0">
       <span><b style="color:var(--purple);font-size:1.1rem">${d}</b> ${names[place]}</span><span style="color:var(--muted)">= ${d*Math.pow(10,place)}</span></div>`;}
   $('pv-out').innerHTML=rows;}
+function ivCompare(){const a=+$('cmp-a').value,b=+$('cmp-b').value;$('cmp-a-lbl').textContent=a;$('cmp-b-lbl').textContent=b;
+  const sa=(''+a).padStart(4,'0'),sb=(''+b).padStart(4,'0'),names=['thousands','hundreds','tens','ones'];
+  let diff=-1;for(let i=0;i<4;i++){if(sa[i]!==sb[i]){diff=i;break;}}
+  const sym=a>b?'>':a<b?'<':'=';
+  let rows='';for(let i=0;i<4;i++){const hl=(i===diff);const bg=hl?'#fff3cd':'transparent',fg=hl?'#946200':'var(--text)';
+    rows+=`<div style="display:flex;gap:8px;justify-content:center;align-items:center;margin:2px 0">
+      <span style="width:84px;font-size:.7rem;color:var(--muted);text-align:right">${names[i]}</span>
+      <span style="width:32px;text-align:center;font-weight:800;border-radius:6px;background:${bg};color:${fg}">${sa[i]}</span>
+      <span style="width:32px;text-align:center;font-weight:800;border-radius:6px;background:${bg};color:${fg}">${sb[i]}</span></div>`;}
+  const note=diff>=0?`First place that differs is the <b>${names[diff]}</b> — that decides it.`:`Every place matches — the numbers are equal.`;
+  $('cmp-out').innerHTML=`<div style="background:#fff;border-radius:10px;padding:10px 6px">${rows}</div><p style="text-align:center;font-size:.8rem;color:var(--muted);margin-top:6px">${note}</p>`;
+  $('cmp-res').textContent=a.toLocaleString()+' '+sym+' '+b.toLocaleString();}
+function ivRound(){const n=+$('rl-n').value;$('rl-n-lbl').textContent=n;
+  const t=Math.round(n/10)*10,h=Math.round(n/100)*100;$('rl-t').textContent=t;$('rl-h').textContent=h;
+  const lo=Math.floor(n/100)*100,hi=lo+100,mid=lo+50,W=300,pad=30,X=v=>pad+((v-lo)/100)*(W-2*pad);
+  $('rl-out').innerHTML=`<svg viewBox="0 0 ${W} 70" style="background:#fff;border-radius:10px">
+    <line x1="${pad}" y1="40" x2="${W-pad}" y2="40" stroke="#999" stroke-width="2"/>
+    <line x1="${X(mid)}" y1="34" x2="${X(mid)}" y2="46" stroke="#f2a33c" stroke-dasharray="3"/>
+    <text x="${X(mid)}" y="60" font-size="9" fill="#f2a33c" text-anchor="middle">halfway ${mid}</text>
+    <circle cx="${X(lo)}" cy="40" r="4" fill="#2f54eb"/><text x="${X(lo)}" y="24" font-size="10" fill="#2f54eb" text-anchor="middle">${lo}</text>
+    <circle cx="${X(hi)}" cy="40" r="4" fill="#2f54eb"/><text x="${X(hi)}" y="24" font-size="10" fill="#2f54eb" text-anchor="middle">${hi}</text>
+    <circle cx="${X(n)}" cy="40" r="6" fill="#e14b4b"/><text x="${X(n)}" y="24" font-size="10" font-weight="bold" fill="#e14b4b" text-anchor="middle">${n}</text></svg>
+    <p style="text-align:center;font-size:.8rem;color:var(--muted)">${n} rounds to <b>${h}</b> at the nearest hundred.</p>`;}
+function blocksSVG(n){const th=Math.floor(n/1000),h=Math.floor(n%1000/100),te=Math.floor(n%100/10),o=n%10;
+  let x=4,g='';function grp(count,w,draw){for(let i=0;i<count;i++){g+=draw(x);x+=w;}if(count)x+=8;}
+  grp(th,30,X=>`<rect x="${X}" y="4" width="26" height="26" rx="2" fill="#2f54eb"/><rect x="${X+3}" y="1" width="26" height="26" rx="2" fill="none" stroke="#2f54eb"/>`);
+  grp(h,26,X=>`<rect x="${X}" y="7" width="22" height="22" fill="#4c8dff" stroke="#fff"/>`);
+  grp(te,9,X=>`<rect x="${X}" y="7" width="6" height="22" fill="#0ea5a4" stroke="#fff"/>`);
+  grp(o,8,X=>`<rect x="${X}" y="23" width="6" height="6" fill="#f2a33c" stroke="#fff"/>`);
+  return `<svg viewBox="0 0 ${Math.max(x,40)} 34" style="max-height:56px;width:auto">${g}</svg>`;}
+function numWords(n){if(n===0)return 'zero';
+  const on=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+  const tn=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  function u1000(x){let s='';if(x>=100){s+=on[Math.floor(x/100)]+' hundred';x%=100;if(x)s+=' ';}
+    if(x>=20){s+=tn[Math.floor(x/10)];x%=10;if(x)s+='-'+on[x];}else if(x>0)s+=on[x];return s;}
+  let res='',th=Math.floor(n/1000),r=n%1000;
+  if(th){res+=u1000(th)+' thousand';if(r)res+=', ';}
+  if(r)res+=u1000(r);return res;}
+function ivBlocks(){const n=+$('bk-n').value;$('bk-n-lbl').textContent=n;
+  $('bk-cnt').textContent=Math.floor(n/1000)+' · '+Math.floor(n%1000/100)+' · '+Math.floor(n%100/10)+' · '+(n%10);
+  $('bk-out').innerHTML=blocksSVG(n)+`<p style="font-size:.78rem;color:var(--muted);margin-top:4px">These blocks show <b>${n.toLocaleString()}</b>.</p>`;}
+function ivForms(){const n=+$('fo-n').value;$('fo-n-lbl').textContent=n;
+  const s=(''+n).padStart(4,'0');const parts=[];for(let i=0;i<4;i++){const d=+s[i],pl=3-i;if(d)parts.push(d*Math.pow(10,pl));}
+  $('fo-out').innerHTML=`<div style="background:#fff;border-radius:10px;padding:12px 14px;line-height:1.9">
+    <div><b style="color:var(--brand)">Standard:</b> ${n.toLocaleString()}</div>
+    <div><b style="color:var(--brand)">Word:</b> ${numWords(n)||'zero'}</div>
+    <div><b style="color:var(--brand)">Expanded:</b> ${parts.length?parts.join(' + '):'0'}</div></div>`;}
 function ivArray(){const r=+$('ar-r').value,c=+$('ar-c').value;$('ar-r-lbl').textContent=r;$('ar-c-lbl').textContent=c;$('ar-prod').textContent=r*c;
   const cell=18;let dots='';for(let y=0;y<r;y++)for(let x=0;x<c;x++)dots+=`<circle cx="${12+x*cell}" cy="${12+y*cell}" r="6" fill="#0ea5e9"/>`;
   $('ar-out').innerHTML=`<svg viewBox="0 0 ${24+c*cell} ${24+r*cell}" style="background:#fff;border-radius:12px;max-height:200px">${dots}</svg>`;}
@@ -228,26 +297,25 @@ function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||
 /* ==========================================================================
    ROUTING
 ========================================================================== */
-function showPage(id){sfx.click();document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');
+function showPage(id){sfx.click();stopGame();document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));window.scrollTo(0,0);
   if(id==='dash')renderDash();if(id==='arcade')resetArcade();if(id==='practice')renderPractice();}
 function setTab(t){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));}
 
-function showHome(){sfx.click();document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('home').classList.add('active');setTab('home');window.scrollTo(0,0);renderHome();}
+function showHome(){sfx.click();stopGame();document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('home').classList.add('active');setTab('home');window.scrollTo(0,0);renderHome();}
 function renderHome(){
   const gcards=gorder.map(gid=>{const G=GRADES[gid];const p=gradeProgress(gid);
     return `<div class="grade-card" style="background:${G.color}" onclick="openGrade('${gid}')">
-      <div class="gc-emoji">${G.emoji}</div><h3>${G.name}</h3><p>${G.blurb}</p>
+      <span class="gc-tag">${G.short}</span><h3>${G.name}</h3><p>${G.blurb}</p>
       <div class="gc-prog"><span style="width:${p}%"></span></div>
       <div style="font-size:.75rem;margin-top:6px;opacity:.9">${p}% complete</div></div>`;}).join('');
   const acc=stats.answered?Math.round(stats.correct/stats.answered*100):'—';
   $('home').innerHTML=`
-    <div class="hero"><div class="htext"><span class="grade-badge">🦆 Grades 4–6</span>
-      <h1>Learn math, level up. 🚀</h1><p>Pick your grade, take a quick placement check, then climb the learning path — with games, visuals, and rewards.</p>
-      <button class="big-btn" onclick="openGrade('g4')">Start with Grade 4 →</button></div>
-      <svg class="duck-hero" viewBox="0 0 100 100"><ellipse cx="50" cy="70" rx="30" ry="24" fill="#ffe066"/><circle cx="34" cy="40" r="21" fill="#ffe066"/><path d="M20 40 q-14 2 -16 8 q10 4 16 -1 z" fill="#f59e0b"/><circle cx="30" cy="36" r="4.5" fill="#fff"/><circle cx="31" cy="37" r="2.6" fill="#2b2640"/><path d="M60 60 q22 -4 26 8 q-14 6 -26 -2 z" fill="#ffd43b"/></svg></div>
+    <div class="hero"><div class="htext"><span class="grade-badge">Grades 4–6</span>
+      <h1>Learn math, level up.</h1><p>Pick your grade, take a quick placement check, then climb the learning path — with games, visuals, and rewards.</p>
+      <button class="big-btn" onclick="openGrade('g4')">Start with Grade 4 →</button></div></div>
     <div class="stats">
-      <div class="stat"><div class="num">🔥 ${streak}</div><div class="label">Day streak</div></div>
+      <div class="stat"><div class="num">${streak}</div><div class="label">Day streak</div></div>
       <div class="stat"><div class="num">${xp}</div><div class="label">XP earned</div></div>
       <div class="stat"><div class="num">${level()}</div><div class="label">Level</div></div>
       <div class="stat"><div class="num">${acc}${acc==='—'?'':'%'}</div><div class="label">Accuracy</div></div>
@@ -270,23 +338,23 @@ function openGrade(gid){sfx.click();curGrade=gid;const G=GRADES[gid];
   const rec=progress.rec[gid];
   const recMsg = rec===undefined
     ? `<div class="lesson-box" style="border-left:5px solid var(--teal)"><b>New here?</b> Take the quick <b>placement check</b> to get a recommended starting point. It never locks anything — explore freely!<br><button class="go-btn" style="background:var(--teal);margin-top:10px" onclick="startPlacement('${gid}')">Take placement check</button></div>`
-    : `<div class="lesson-box" style="border-left:5px solid var(--green)">✅ Placement done! Recommended start: <b>${G.units[rec].name}</b>. Units before it are marked as "you likely know this" — but you can do any of them. <button class="go-btn ghost" style="margin-top:8px" onclick="startPlacement('${gid}')">Retake</button></div>`;
+    : `<div class="lesson-box" style="border-left:5px solid var(--green)">Placement done. Recommended start: <b>${G.units[rec].name}</b>. Units before it are marked as "you likely know this" — but you can do any of them. <button class="go-btn ghost" style="margin-top:8px" onclick="startPlacement('${gid}')">Retake</button></div>`;
   const cards=G.units.map((u,ui)=>{const p=unitProgress(gid,ui);const isRec=rec===ui;const known=rec!==undefined&&ui<rec;
-    return `<div class="card" style="border-color:${isRec?'var(--green)':'transparent'}" onclick="openUnit('${gid}',${ui})">
-      ${isRec?'<span class="start-here">⭐ START HERE</span>':''}
-      <span class="tag" style="background:${u.accent}">${u.code}</span>
-      <div class="icon">${u.icon}</div><h3>${u.name}</h3>
+    return `<div class="card" style="border-color:${isRec?'var(--green)':'var(--line)'}" onclick="openUnit('${gid}',${ui})">
+      ${isRec?'<span class="start-here">START HERE</span>':''}
+      <span class="tag" style="background:${u.accent}">${ulabel(u)}</span>
+      <h3 style="margin-top:8px">${u.name}</h3>
       <p>${known?'<span style="color:var(--green)">✓ You likely know this</span>':u.sections.length+' lessons + unit test'}</p>
       <div class="bar"><span style="width:${known&&p===0?100:p}%"></span></div></div>`;}).join('');
   const gp=gradeProgress(gid),gt=progress.grades[gid];
   $('grade').innerHTML=`<button class="back-link" onclick="showHome()">← All grades</button>
-    <div class="unit-head" style="background:${G.color}"><div class="code">${G.name} · Common Core</div><h2>${G.emoji} ${G.name} Math</h2><p>${G.blurb}</p>
+    <div class="unit-head" style="background:${G.color}"><div class="code">${G.name} · Common Core</div><h2>${G.name} Math</h2><p>${G.blurb}</p>
       <div class="bar" style="background:rgba(255,255,255,.3);margin-top:10px"><span style="width:${gp}%;background:#fff"></span></div></div>
     ${recMsg}
     <h2 class="section-title">Units</h2>
     <div class="cards">${cards}</div>
     <div style="margin-top:18px" class="path-step">
-      <div class="step-num" style="background:var(--orange)">🏆</div>
+      <div class="step-num" style="background:var(--brand)">★</div>
       <div class="step-body"><h4>Final Grade Test ${gt?'<span class="done-check">✓ Passed</span>':''}</h4><p>Pass to earn your ${G.name} trophy + certificate!</p></div>
       <button class="go-btn" style="background:var(--orange)" onclick="startFinal('${gid}')">Take final</button></div>`;
 }
@@ -302,12 +370,12 @@ function openUnit(gid,ui){sfx.click();const G=GRADES[gid],u=G.units[ui];
       <button class="go-btn" style="background:var(--green)" onclick="startQuiz('${gid}',${ui},${si})">Quiz</button></div>`;}).join('');
   const tp=progress.tests[u.id];
   $('unit').innerHTML=`<button class="back-link" onclick="openGrade('${gid}')">← ${G.name} units</button>
-    <div class="unit-head" style="background:linear-gradient(120deg,${u.accent},#38bdf8)"><div class="code">${u.code}</div><h2>${u.icon} ${u.name}</h2></div>
+    <div class="unit-head" style="background:${u.accent}"><div class="code">${ulabel(u)}</div><h2>${u.name}</h2></div>
     ${steps}
     <div class="path-step"><div class="step-num" style="background:var(--amber)">★</div>
-      <div class="step-body"><h4>Unit Test ${tp?'<span class="done-check">✓ Passed</span>':''}</h4><p>${u.test.length} questions · earn the ${u.code} badge</p></div>
+      <div class="step-body"><h4>Unit Test ${tp?'<span class="done-check">✓ Passed</span>':''}</h4><p>${u.test.length} questions · earn the ${ulabel(u)} badge</p></div>
       <button class="go-btn" style="background:var(--amber)" onclick="startTest('${gid}',${ui})">Take test</button></div>
-    <div class="path-step"><div class="step-num" style="background:var(--teal)">✨</div>
+    <div class="path-step"><div class="step-num" style="background:var(--teal)">∞</div>
       <div class="step-body"><h4>Endless Practice</h4><p>Unlimited auto-generated questions that adapt to you</p></div>
       <button class="go-btn" style="background:var(--teal)" onclick="practiceRun(['${u.id}'],'${u.name}')">Practice</button></div>`;
 }
@@ -319,11 +387,12 @@ function openLesson(gid,ui,si){sfx.click();const s=GRADES[gid].units[ui].section
   const exHtml=exs.length?`<h4 class="ls-sub">✏️ Worked examples</h4>`+exs.map((ex,k)=>`<div class="example"><h4>Example ${exs.length>1?(k+1):''}: ${ex.title}</h4>
     <div id="ex-steps-${k}">${ex.steps.map(st=>`<div class="step">${st}</div>`).join('')}</div>
     <button class="hintbtn" id="ex-btn-${k}" onclick="revealStep(${k})">Show me step 1 →</button></div>`).join(''):'';
-  const ivHtml=s.iv?`<h4 class="ls-sub">🎮 Try it yourself</h4>${IV[s.iv].html}`:'';
+  const ivKeys=s.iv?(Array.isArray(s.iv)?s.iv:[s.iv]):[];
+  const ivHtml=ivKeys.length?`<h4 class="ls-sub">Try it yourself</h4>`+ivKeys.map(k=>IV[k]?IV[k].html:'').join(''):'';
   $('lesson').innerHTML=`<div class="lesson-box"><button class="back-link" onclick="openUnit('${gid}',${ui})">← Back to unit</button>
     <h3>${s.title}</h3>${speakCtl()}<div class="teach">${s.teach}</div>${exHtml}${ivHtml}
-    <div style="text-align:center;margin-top:18px"><button class="go-btn" style="background:var(--green)" onclick="startQuiz('${gid}',${ui},${si})">✅ I'm ready — take the quiz →</button></div></div>`;
-  if(s.iv&&IV[s.iv])IV[s.iv].init();
+    <div style="text-align:center;margin-top:18px"><button class="go-btn" style="background:var(--green)" onclick="startQuiz('${gid}',${ui},${si})">I'm ready — take the quiz →</button></div></div>`;
+  ivKeys.forEach(k=>{if(IV[k])IV[k].init();});
   window._read=s.title+'. '+stripTags(s.teach);
   window._exCounters={};
 }
@@ -347,6 +416,7 @@ function renderQ(){const q=Q.list[Q.i];Q.answered=false;
     <div style="font-weight:800;color:var(--muted);margin-bottom:6px">${Q.cfg.title}</div>
     <div class="dots">${dots}</div>
     <div class="q-text">${Q.i+1}. ${q.q}</div>
+    ${q.vis!==undefined?`<div class="q-visual" style="text-align:center;margin:8px 0">${blocksSVG(q.vis)}</div>`:''}
     ${speakCtl()}
     <div class="options" id="q-opts">${q.o.map((o,k)=>`<button class="opt" onclick="pick(${k})">${o}</button>`).join('')}</div>
     <div class="feedback" id="q-fb"></div>
@@ -390,7 +460,7 @@ function startQuiz(gid,ui,si){const s=GRADES[gid].units[ui].sections[si];const b
 function startTest(gid,ui){const u=GRADES[gid].units[ui];const back=()=>openUnit(gid,ui);
   runQuiz({questions:u.test,title:u.name+' — Unit Test',passMark:Math.ceil(u.test.length*0.6),back,
     onPass:(score,total,pass)=>{let extra='';if(pass&&!progress.tests[u.id]){progress.tests[u.id]=true;sfx.win();confetti();
-        modal('🏅','Badge Earned!','You earned the '+u.code+' badge!');}
+        modal('🏅','Badge Earned!','You earned the '+ulabel(u)+' badge!');}
       save();resultScreen(pass?'Unit Test passed! 🏅':'Not quite — review and retry!',score,total,pass,back);}});}
 function startPlacement(gid){const G=GRADES[gid];const back=()=>openGrade(gid);
   runQuiz({questions:G.placement,title:G.name+' — Placement Check',passMark:0,back,
@@ -429,69 +499,89 @@ function saveName(){progress.name=$('cert-name').value;save();}
    ARCADE
 ========================================================================== */
 function allQ(){const list=[];gorder.forEach(g=>GRADES[g].units.forEach(u=>{u.sections.forEach(s=>s.quiz.forEach(q=>list.push(q)));u.test.forEach(q=>list.push(q));}));return list;}
-function resetArcade(){$('arcade-menu').innerHTML=`
-   <div class="card" onclick="startSpeed()" style="border-color:var(--purple)"><div class="icon">⚡</div><h3>Speed Round</h3><p>Answer as many as you can in 60s.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.speed}</small></div>
-   <div class="card" onclick="startDrop()" style="border-color:var(--green)"><div class="icon">🎯</div><h3>Number-Line Drop</h3><p>Tap where the answer lands.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.drop}</small></div>
-   <div class="card" onclick="startMatch()" style="border-color:var(--pink)"><div class="icon">🍕</div><h3>Fraction Match</h3><p>Pick the equal fraction fast.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.match}</small></div>
-   <div class="card" onclick="startBalloon()" style="border-color:var(--coral)"><div class="icon">🎈</div><h3>Balloon Pop</h3><p>Pop the balloon with the right answer. Build combos!</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.balloon}</small></div>
-   <div class="card" onclick="startTF()" style="border-color:var(--amber)"><div class="icon">⚡</div><h3>True or False</h3><p>Is it right? Tap fast, chain combos, 60 seconds.</p><small style="color:var(--muted);font-weight:700">Best: ${progress.best.tf}</small></div>`;
-  $('arcade-menu').classList.remove('hidden');$('arcade-game').classList.add('hidden');$('arcade-game').innerHTML='';if(gameTimer){clearInterval(gameTimer);gameTimer=null;}}
-let gameTimer=null;
+let gameTimer=null, gameToken=0, gameRAF=null;
+function stopGame(){gameToken++;if(gameTimer){clearInterval(gameTimer);gameTimer=null;}if(gameRAF){cancelAnimationFrame(gameRAF);gameRAF=null;}}
 function openGame(){$('arcade-menu').classList.add('hidden');$('arcade-game').classList.remove('hidden');}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function startSpeed(){sfx.click();openGame();let time=60,sc=0,pool=shuffle(allQ()),qi=0;
-  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>⚡ Speed Round</span><span>⏱ <span id="sp-t">60</span>s</span><span>Score: <span id="sp-s">0</span></span></div>
-    <div class="timer-bar"><span id="sp-bar"></span></div><div class="q-text" id="sp-q"></div><div class="options" id="sp-o"></div><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
-  function nx(){if(qi>=pool.length){pool=shuffle(allQ());qi=0;}const q=pool[qi++];$('sp-q').textContent=q.q;
-    $('sp-o').innerHTML=q.o.map((o,k)=>`<button class="opt">${o}</button>`).join('');
-    document.querySelectorAll('#sp-o .opt').forEach((b,k)=>b.onclick=()=>{if(k===q.a){sc++;sfx.correct();addXP(2);}else sfx.wrong();$('sp-s').textContent=sc;nx();});}
-  nx();gameTimer=setInterval(()=>{time--;$('sp-t').textContent=time;$('sp-bar').style.width=(time/60*100)+'%';if(time<=0){clearInterval(gameTimer);gameTimer=null;endGame('speed',sc,'⚡ Speed Round');}},1000);}
-function startDrop(){sfx.click();openGame();
-  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🎯 Number-Line Drop</span><span>Round <span id="dr-r">1</span>/8</span><span>Score: <span id="dr-s">0</span></span></div>
-    <div class="q-text" id="dr-q"></div><div class="nl-track" id="dr-tk" onclick="dropClick(event)"></div><p id="dr-fb" class="feedback"></p><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
-  window._dr={sc:0,rounds:0,min:-10,max:10};newDrop();}
-function newDrop(){const d=window._dr;if(d.rounds>=8){endGame('drop',d.sc,'🎯 Number-Line Drop');return;}d.rounds++;$('dr-r').textContent=d.rounds;
-  const a=Math.floor(Math.random()*17)-8,b=Math.floor(Math.random()*17)-8;d.target=a+b;d.expr=a+' + '+(b<0?'('+b+')':b);$('dr-q').textContent='Tap where '+d.expr+' lands:';
+function comboTag(c){return c>=6?'🔥🔥 x'+c:c>=2?'🔥 x'+c:'';}
+function flash(id,txt,cls){const e=$(id);if(!e)return;e.textContent=txt;e.className='combo-tag '+(cls||'');e.style.animation='none';e.offsetHeight;e.style.animation='pop .3s';}
+function resetArcade(){stopGame();
+  const ic={speed:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+    drop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>',
+    match:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="7" y1="18" x2="17" y2="6"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="16" r="2"/></svg>',
+    balloon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3c3.3 0 6 2.5 6 6 0 4-4 7-6 8-2-1-6-4-6-8 0-3.5 2.7-6 6-6z"/><path d="M12 17v4"/></svg>',
+    tf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'};
+  $('arcade-menu').innerHTML=`
+   <div class="card" onclick="startSpeed()" style="border-color:var(--brand)"><div class="icon" style="color:var(--brand)">${ic.speed}</div><h3>Speed Round</h3><p>Beat the clock. Chain combos for big points.</p><small style="color:var(--muted);font-weight:600">Best: ${progress.best.speed}</small></div>
+   <div class="card" onclick="startDrop()" style="border-color:var(--green)"><div class="icon" style="color:var(--green)">${ic.drop}</div><h3>Number-Line Drop</h3><p>Tap where the answer lands. 10 rounds.</p><small style="color:var(--muted);font-weight:600">Best: ${progress.best.drop}</small></div>
+   <div class="card" onclick="startMatch()" style="border-color:var(--coral)"><div class="icon" style="color:var(--coral)">${ic.match}</div><h3>Fraction Match</h3><p>Pick the equal fraction fast.</p><small style="color:var(--muted);font-weight:600">Best: ${progress.best.match}</small></div>
+   <div class="card" onclick="startBalloon()" style="border-color:var(--sky)"><div class="icon" style="color:var(--sky)">${ic.balloon}</div><h3>Balloon Pop</h3><p>Pop the right balloon before it floats away.</p><small style="color:var(--muted);font-weight:600">Best: ${progress.best.balloon}</small></div>
+   <div class="card" onclick="startTF()" style="border-color:var(--amber)"><div class="icon" style="color:var(--amber)">${ic.tf}</div><h3>True or False</h3><p>Right or wrong? Tap fast, chain combos, 60s.</p><small style="color:var(--muted);font-weight:600">Best: ${progress.best.tf}</small></div>`;
+  $('arcade-menu').classList.remove('hidden');$('arcade-game').classList.add('hidden');$('arcade-game').innerHTML='';}
+
+function startSpeed(){sfx.click();openGame();stopGame();const tok=gameToken;let time=60,sc=0,combo=0,best=0,cor=0,ans=0,lvl=1;
+  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>⚡ Speed Round</span><span>⏱ <span id="sp-t">60</span>s</span><span>Score <span id="sp-s">0</span></span></div>
+    <div class="timer-bar"><span id="sp-bar"></span></div><div class="combo-tag" id="sp-combo"></div><div class="q-text" id="sp-q"></div><div class="options" id="sp-o"></div><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
+  function nx(){if(tok!==gameToken)return;const q=genQ(lvl);$('sp-q').textContent=q.q;
+    $('sp-o').innerHTML=q.o.map(o=>`<button class="opt">${o}</button>`).join('');
+    document.querySelectorAll('#sp-o .opt').forEach((b,k)=>b.onclick=()=>{if(tok!==gameToken)return;ans++;
+      if(k===q.a){cor++;combo++;best=Math.max(best,combo);const pts=5+Math.min(combo,10);sc+=pts;lvl=Math.min(3,1+Math.floor(combo/4));sfx.correct();addXP(2);flash('sp-combo','+'+pts+' '+comboTag(combo),'good');}
+      else{combo=0;lvl=1;sfx.wrong();flash('sp-combo','miss — combo reset','bad');}
+      $('sp-s').textContent=sc;nx();});}
+  nx();gameTimer=setInterval(()=>{if(tok!==gameToken){clearInterval(gameTimer);return;}time--;$('sp-t').textContent=time;$('sp-bar').style.width=(time/60*100)+'%';if(time<=0){endGame('speed',sc,'⚡ Speed Round',cor,ans,best);}},1000);}
+
+function startDrop(){sfx.click();openGame();stopGame();const tok=gameToken;
+  window._dr={sc:0,rounds:0,min:-10,max:10,combo:0,best:0,cor:0,answered:false,tok};
+  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🎯 Number-Line Drop</span><span>Round <span id="dr-r">1</span>/10</span><span>Score <span id="dr-s">0</span></span></div>
+    <div class="combo-tag" id="dr-combo"></div><div class="q-text" id="dr-q"></div><div class="nl-track" id="dr-tk" onclick="dropClick(event)"></div><p id="dr-fb" class="feedback"></p><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
+  newDrop();}
+function newDrop(){const d=window._dr;if(!d||d.tok!==gameToken)return;if(d.rounds>=10){endGame('drop',d.sc,'🎯 Number-Line Drop',d.cor,d.rounds,d.best);return;}d.rounds++;$('dr-r').textContent=d.rounds;d.answered=false;
+  const a=rint(-8,8),b=rint(-8,8);d.target=a+b;d.expr=a+' + '+(b<0?'('+b+')':b);$('dr-q').textContent='Tap where '+d.expr+' lands:';
   const W=300;let ticks='';for(let v=d.min;v<=d.max;v+=2){const x=20+((v-d.min)/(d.max-d.min))*(W-40);ticks+=`<line x1="${x}" y1="30" x2="${x}" y2="40" stroke="#999"/><text x="${x}" y="56" font-size="10" fill="#777" text-anchor="middle">${v}</text>`;}
   $('dr-tk').innerHTML=`<svg viewBox="0 0 ${W} 70" width="100%" height="70"><line x1="20" y1="35" x2="${W-20}" y2="35" stroke="#999" stroke-width="2"/>${ticks}</svg>`;$('dr-fb').textContent='';}
-function dropClick(e){const d=window._dr;const r=$('dr-tk').getBoundingClientRect();const val=d.min+((e.clientX-r.left)/r.width)*(d.max-d.min);const guess=Math.round(val);
-  if(guess===d.target){d.sc++;sfx.correct();addXP(3);$('dr-fb').textContent='✅ '+d.expr+' = '+d.target;$('dr-fb').className='feedback good';}
-  else{sfx.wrong();$('dr-fb').textContent='❌ '+d.expr+' = '+d.target+' (you tapped ~'+guess+')';$('dr-fb').className='feedback bad';}
-  $('dr-s').textContent=d.sc;setTimeout(newDrop,900);}
-function startMatch(){sfx.click();openGame();let time=30,sc=0;const base=[[1,2],[1,3],[2,3],[1,4],[3,4],[1,5],[2,5]];
-  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🍕 Fraction Match</span><span>⏱ <span id="fm-t">30</span>s</span><span>Score: <span id="fm-s">0</span></span></div>
-    <div class="timer-bar"><span id="fm-bar"></span></div><div class="q-text" id="fm-q" style="text-align:center;font-size:1.5rem"></div><div class="options" id="fm-o"></div><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
-  function nf(){const f=base[Math.floor(Math.random()*base.length)],m=2+Math.floor(Math.random()*4),eq=[f[0]*m,f[1]*m];
+function dropClick(e){const d=window._dr;if(!d||d.tok!==gameToken||d.answered)return;d.answered=true;const r=$('dr-tk').getBoundingClientRect();const val=d.min+((e.clientX-r.left)/r.width)*(d.max-d.min);const guess=Math.round(val);
+  if(guess===d.target){d.cor++;d.combo++;d.best=Math.max(d.best,d.combo);const pts=5+d.combo;d.sc+=pts;sfx.correct();addXP(3);$('dr-fb').innerHTML='✅ '+d.expr+' = '+d.target+'  '+comboTag(d.combo);$('dr-fb').className='feedback good';}
+  else{d.combo=0;sfx.wrong();$('dr-fb').textContent='❌ '+d.expr+' = '+d.target+' (you tapped ~'+guess+')';$('dr-fb').className='feedback bad';}
+  $('dr-s').textContent=d.sc;setTimeout(()=>{if(d.tok===gameToken)newDrop();},900);}
+
+function startMatch(){sfx.click();openGame();stopGame();const tok=gameToken;let time=30,sc=0,combo=0,best=0,cor=0,ans=0;const base=[[1,2],[1,3],[2,3],[1,4],[3,4],[1,5],[2,5]];
+  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🍕 Fraction Match</span><span>⏱ <span id="fm-t">30</span>s</span><span>Score <span id="fm-s">0</span></span></div>
+    <div class="timer-bar"><span id="fm-bar"></span></div><div class="combo-tag" id="fm-combo"></div><div class="q-text" id="fm-q" style="text-align:center;font-size:1.5rem"></div><div class="options" id="fm-o"></div><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
+  function nf(){if(tok!==gameToken)return;const f=base[Math.floor(Math.random()*base.length)],m=2+Math.floor(Math.random()*4),eq=[f[0]*m,f[1]*m];
     $('fm-q').innerHTML='Which equals <b>'+f[0]+'/'+f[1]+'</b>?';const opts=[eq];
     while(opts.length<4){const wn=eq[0]+(Math.floor(Math.random()*5)-2),wd=eq[1]+(Math.floor(Math.random()*5)-2);if(wd>0&&wn>0&&Math.abs(wn/wd-f[0]/f[1])>.01&&!opts.some(o=>o[0]===wn&&o[1]===wd))opts.push([wn,wd]);}
     shuffle(opts);$('fm-o').innerHTML=opts.map(o=>`<button class="opt" style="text-align:center">${o[0]}/${o[1]}</button>`).join('');
-    document.querySelectorAll('#fm-o .opt').forEach((b,k)=>b.onclick=()=>{const o=opts[k];if(Math.abs(o[0]/o[1]-f[0]/f[1])<.01){sc++;sfx.correct();addXP(2);}else sfx.wrong();$('fm-s').textContent=sc;nf();});}
-  nf();gameTimer=setInterval(()=>{time--;$('fm-t').textContent=time;$('fm-bar').style.width=(time/30*100)+'%';if(time<=0){clearInterval(gameTimer);gameTimer=null;endGame('match',sc,'🍕 Fraction Match');}},1000);}
-function endGame(key,score,name){const best=score>progress.best[key];if(best)progress.best[key]=score;save();sfx.win();confetti();
-  $('arcade-game').innerHTML=`<div class="game-card result"><div class="big" style="font-size:2.5rem">${best?'🏆':'🎮'}</div><div class="score">${score}</div><p>${name}${best?' — NEW HIGH SCORE!':''}</p><p style="color:var(--muted)">Best: ${progress.best[key]}</p><button class="next-btn" onclick="resetArcade()">Back to Arcade</button></div>`;}
+    document.querySelectorAll('#fm-o .opt').forEach((b,k)=>b.onclick=()=>{if(tok!==gameToken)return;ans++;const o=opts[k];if(Math.abs(o[0]/o[1]-f[0]/f[1])<.01){cor++;combo++;best=Math.max(best,combo);const pts=5+Math.min(combo,10);sc+=pts;sfx.correct();addXP(2);flash('fm-combo','+'+pts+' '+comboTag(combo),'good');}else{combo=0;sfx.wrong();flash('fm-combo','nope!','bad');}$('fm-s').textContent=sc;nf();});}
+  nf();gameTimer=setInterval(()=>{if(tok!==gameToken){clearInterval(gameTimer);return;}time--;$('fm-t').textContent=time;$('fm-bar').style.width=(time/30*100)+'%';if(time<=0){endGame('match',sc,'🍕 Fraction Match',cor,ans,best);}},1000);}
+
+function endGame(key,score,name,cor,ans,bestC){stopGame();const best=score>(progress.best[key]||0);if(best)progress.best[key]=score;save();sfx.win();confetti();
+  const acc=ans?Math.round(cor/ans*100):0;
+  $('arcade-game').innerHTML=`<div class="game-card result"><div class="big" style="font-size:2.5rem">${best?'🏆':'🎮'}</div>
+    <div class="score">${score}</div><p style="font-weight:800">${name}${best?' — NEW HIGH SCORE! 🎉':''}</p>
+    <div class="readout" style="justify-content:center"><div class="chip"><b>${acc}%</b><span>accuracy</span></div><div class="chip"><b>🔥 ${bestC||0}</b><span>best combo</span></div><div class="chip"><b>${progress.best[key]}</b><span>high score</span></div></div>
+    <button class="next-btn" onclick="resetArcade()" style="margin-top:14px">Back to Arcade</button></div>`;}
 
 /* ==========================================================================
    DASHBOARD
 ========================================================================== */
 function renderDash(){const acc=stats.answered?Math.round(stats.correct/stats.answered*100):0;
-  $('dash').innerHTML=`<h2 class="section-title">📊 Your Progress</h2><p class="sub">Everything you've earned. Progress saves automatically.</p>
+  $('dash').innerHTML=`<h2 class="section-title">Your Progress</h2><p class="sub">Everything you've earned. Progress saves automatically.</p>
    <div class="dash-grid">
      <div class="dash-tile"><div class="big">${xp}</div><div class="lbl">Total XP</div></div>
      <div class="dash-tile"><div class="big">${level()}</div><div class="lbl">Level</div></div>
-     <div class="dash-tile"><div class="big">🔥 ${streak}</div><div class="lbl">Streak</div></div>
+     <div class="dash-tile"><div class="big">${streak}</div><div class="lbl">Day streak</div></div>
      <div class="dash-tile"><div class="big">${badgeCount()}</div><div class="lbl">Badges</div></div>
      <div class="dash-tile"><div class="big">${acc}%</div><div class="lbl">Accuracy</div></div>
      <div class="dash-tile"><div class="big">${stats.answered}</div><div class="lbl">Answered</div></div>
      <div class="dash-tile"><div class="big">${progress.best.speed}</div><div class="lbl">Best Speed</div></div>
    </div>
    <h2 class="section-title">Grade progress</h2>
-   <div class="dash-grid">${gorder.map(g=>`<div class="dash-tile"><div class="big" style="color:${GRADES[g].accent}">${gradeProgress(g)}%</div><div class="lbl">${GRADES[g].name} ${progress.grades[g]?'🏆':''}</div></div>`).join('')}</div>
-   ${avatarSection()}
+   <div class="dash-grid">${gorder.map(g=>`<div class="dash-tile"><div class="big" style="color:${GRADES[g].accent}">${gradeProgress(g)}%</div><div class="lbl">${GRADES[g].name}${progress.grades[g]?' ✓':''}</div></div>`).join('')}</div>
    <h2 class="section-title">Badges & Trophies</h2>
    <div class="badge-shelf">${badgeShelf()}</div>`;
 }
 function badgeShelf(){let html='';gorder.forEach(g=>{GRADES[g].units.forEach(u=>{const got=progress.tests[u.id];
-    html+=`<span class="badge ${got?'':'locked'}" style="${got?'background:'+u.accent:''}">${got?'🏅':'🔒'} ${u.code}</span>`;});
+    html+=`<span class="badge ${got?'':'locked'}" style="${got?'background:'+u.accent:''}">${got?'🏅':'🔒'} ${ulabel(u)}</span>`;});
     html+=`<span class="badge ${progress.grades[g]?'':'locked'}" style="${progress.grades[g]?'background:var(--orange)':''}">${progress.grades[g]?'🏆':'🔒'} ${GRADES[g].short}</span>`;});
   return html;}
 
@@ -541,73 +631,56 @@ function autoRead(t){window._read=t;if(progress.settings.read)speak(t);}
 function stripTags(h){return String(h).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();}
 function speakCtl(){return `<button class="speak-btn" onclick="readCurrent()">🔊 Read aloud</button>`;}
 
-/* ==========================================================================
-   AVATARS / UNLOCKABLES
-========================================================================== */
-const AVATARS=[
- {e:"🦆",name:"Ducky",lvl:1},{e:"🐱",name:"Cat",lvl:1},{e:"🐶",name:"Pup",lvl:2},
- {e:"🦊",name:"Fox",lvl:3},{e:"🐼",name:"Panda",lvl:4},{e:"🐸",name:"Frog",lvl:5},
- {e:"🦉",name:"Owl",lvl:6},{e:"🐧",name:"Penguin",lvl:7},{e:"🦁",name:"Lion",lvl:8},
- {e:"🦄",name:"Unicorn",lvl:10},{e:"🐲",name:"Dragon",lvl:12},{e:"🤖",name:"Robot",lvl:15},
- {e:"👾",name:"Alien",lvl:18},{e:"🚀",name:"Rocket",lvl:20}
-];
-function avUnlocked(a){return level()>=a.lvl;}
-function updateNavAvatar(){const el=$('nav-av');if(el)el.textContent=progress.avatar||"🦆";}
-function pickAvatar(e){const a=AVATARS.find(x=>x.e===e);if(!a)return;if(!avUnlocked(a)){sfx.wrong();return;}progress.avatar=e;updateNavAvatar();sfx.correct();save();renderDash();}
-function avatarSection(){
-  const cells=AVATARS.map(a=>{const un=avUnlocked(a),sel=progress.avatar===a.e;
-    return `<div class="av-cell ${sel?'sel':''} ${un?'':'locked'}" onclick="${un?`pickAvatar('${a.e}')`:''}">
-      <span class="av-emoji">${un?a.e:'🔒'}</span><span class="av-name">${a.name}</span>
-      ${un?'':`<span class="av-lock">Level ${a.lvl}</span>`}</div>`;}).join('');
-  return `<h2 class="section-title">Your avatar</h2><p class="sub">Unlock more by leveling up. Current level: ${level()}.</p><div class="avatar-grid">${cells}</div>`;
-}
+/* (Avatar / unlockables feature removed for a cleaner, emoji-free look.) */
+function updateNavAvatar(){/* no-op: nav avatar removed */}
 
 /* ==========================================================================
    NEW MINIGAMES  (generator-fed) + combos
 ========================================================================== */
 function genQ(L){return GEN[pickOne(allUnitIds())](Math.min(L,3));}
 const MSTOPICS=['msChange','msTwoStep','msReverseRect','msReverseTri','msCompare','msFractionOf','msPercent'];
-function startBalloon(){sfx.click();openGame();let time=60,sc=0,combo=0,lvl=1;
-  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🎈 Balloon Pop</span><span>⏱ <span id="bl-t">60</span>s</span><span>Score: <span id="bl-s">0</span></span></div>
-    <div class="timer-bar"><span id="bl-bar"></span></div>
+function startBalloon(){sfx.click();openGame();stopGame();const tok=gameToken;
+  let time=60,sc=0,combo=0,best=0,cor=0,ans=0,lvl=1,balloons=[];
+  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🎈 Balloon Pop</span><span>⏱ <span id="bl-t">60</span>s</span><span>Score <span id="bl-s">0</span></span></div>
+    <div class="timer-bar"><span id="bl-bar"></span></div><div class="combo-tag" id="bl-combo"></div>
     <div class="q-text" id="bl-q" style="text-align:center"></div>
     <div class="balloon-field" id="bl-field"></div>
-    <p id="bl-fb" class="feedback" style="text-align:center"></p><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
+    <button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
   const cols=['#ef4444','#0ea5e9','#22c55e','#f59e0b','#fb7185','#14b8a6'];
-  function round(){const q=genQ(lvl);$('bl-q').textContent=q.q;
-    const field=$('bl-field');field.innerHTML='';
+  function round(){if(tok!==gameToken)return;const q=genQ(lvl);$('bl-q').textContent=q.q;
+    const field=$('bl-field');if(!field)return;field.innerHTML='';balloons=[];
     const idx=q.o.map((_,i)=>i);shuffle(idx);
-    idx.forEach((oi,pos)=>{const b=document.createElement('div');b.className='balloon';
-      b.style.background=cols[pos%cols.length];b.style.left=(8+pos*23)+'%';b.style.top=(20+((pos*37)%55))+'%';
-      b.textContent=q.o[oi];
-      b.onclick=()=>{ if(oi===q.a){combo++;const pts=10+Math.min(combo,5)*2;sc+=pts;lvl=Math.min(3,1+Math.floor(combo/4));addXP(2);sfx.correct();$('bl-fb').textContent='Pop! +'+pts+(combo>1?'  🔥x'+combo:'');$('bl-fb').className='feedback good';}
-        else{combo=0;sfx.wrong();$('bl-fb').textContent='Oops — that was '+q.o[q.a];$('bl-fb').className='feedback bad';}
-        $('bl-s').textContent=sc;round();};
-      field.appendChild(b);});}
-  round();
-  gameTimer=setInterval(()=>{time--;$('bl-t').textContent=time;$('bl-bar').style.width=(time/60*100)+'%';if(time<=0){clearInterval(gameTimer);gameTimer=null;endGame('balloon',sc,'🎈 Balloon Pop');}},1000);
-}
+    idx.forEach((oi,pos)=>{const el=document.createElement('div');el.className='balloon';
+      el.style.background=cols[pos%cols.length];el.style.left=(6+pos*23)+'%';el.style.bottom='-16%';el.textContent=q.o[oi];
+      el.onclick=()=>{if(tok!==gameToken)return;ans++;
+        if(oi===q.a){cor++;combo++;best=Math.max(best,combo);const pts=10+Math.min(combo,6)*2;sc+=pts;lvl=Math.min(4,1+Math.floor(combo/3));sfx.correct();addXP(2);flash('bl-combo','Pop! +'+pts+' '+comboTag(combo),'good');$('bl-s').textContent=sc;round();}
+        else{combo=0;lvl=Math.max(1,lvl-1);sfx.wrong();flash('bl-combo','wrong balloon!','bad');el.style.opacity='.3';el.style.pointerEvents='none';}};
+      field.appendChild(el);balloons.push({el,y:-16,speed:0.28+lvl*0.09+Math.random()*0.12});});}
+  function tick(){if(tok!==gameToken)return;let escaped=false;
+    for(const b of balloons){if(!b.el.parentNode)continue;b.y+=b.speed;b.el.style.bottom=b.y+'%';if(b.y>92){escaped=true;break;}}
+    if(escaped){combo=0;sfx.wrong();flash('bl-combo','it floated away! 🎈','bad');round();}
+    gameRAF=requestAnimationFrame(tick);}
+  round();gameRAF=requestAnimationFrame(tick);
+  gameTimer=setInterval(()=>{if(tok!==gameToken){clearInterval(gameTimer);return;}time--;$('bl-t').textContent=time;$('bl-bar').style.width=(time/60*100)+'%';if(time<=0){endGame('balloon',sc,'🎈 Balloon Pop',cor,ans,best);}},1000);}
 function tfItem(L){let q,tries=0;do{q=genQ(L);tries++;}while(!q.q.trim().endsWith('=')&&tries<30);
   if(!q.q.trim().endsWith('=')){const a=rint(2,9),b=rint(2,9);q={q:a+' × '+b+' =',o:[String(a*b)],a:0};}
   const correct=q.o[q.a];let shown=correct,isTrue=true;
   if(Math.random()<.5){const w=q.o.filter((o,i)=>i!==q.a);if(w.length){shown=pickOne(w);isTrue=false;}}
   return {statement:q.q+' '+shown,isTrue};}
-function startTF(){sfx.click();openGame();let time=60,sc=0,combo=0,lvl=1,cur=null;
-  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>⚡ True or False</span><span>⏱ <span id="tf-t">60</span>s</span><span>Score: <span id="tf-s">0</span></span></div>
-    <div class="timer-bar"><span id="tf-bar"></span></div>
+function startTF(){sfx.click();openGame();stopGame();const tok=gameToken;
+  window._tf={time:60,sc:0,combo:0,best:0,cor:0,ans:0,lvl:1,cur:null,tok};
+  $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>✅ True or False</span><span>⏱ <span id="tf-t">60</span>s</span><span>Score <span id="tf-s">0</span></span></div>
+    <div class="timer-bar"><span id="tf-bar"></span></div><div class="combo-tag" id="tf-combo"></div>
     <div class="q-text" id="tf-q" style="text-align:center;font-size:1.7rem;padding:14px 0"></div>
     <div class="tf-btns"><button class="tf-btn tf-true" onclick="tfAns(true)">✓ True</button><button class="tf-btn tf-false" onclick="tfAns(false)">✗ False</button></div>
-    <p id="tf-fb" class="feedback" style="text-align:center"></p><button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
-  window._tf={get sc(){return sc;},set sc(v){sc=v;},get combo(){return combo;},set combo(v){combo=v;},get lvl(){return lvl;},set lvl(v){lvl=v;}};
-  function round(){cur=tfItem(lvl);$('tf-q').textContent=cur.statement;}
-  window._tfRound=round;window._tfGet=()=>cur;
-  round();
-  gameTimer=setInterval(()=>{time--;$('tf-t').textContent=time;$('tf-bar').style.width=(time/60*100)+'%';if(time<=0){clearInterval(gameTimer);gameTimer=null;endGame('tf',sc,'⚡ True or False');}},1000);
-}
-function tfAns(ans){const cur=window._tfGet&&window._tfGet();if(!cur)return;const st=window._tf;
-  if(ans===cur.isTrue){st.combo++;const pts=10+Math.min(st.combo,5)*2;st.sc+=pts;st.lvl=Math.min(3,1+Math.floor(st.combo/4));addXP(2);sfx.correct();$('tf-fb').textContent='Correct! +'+pts+(st.combo>1?'  🔥x'+st.combo:'');$('tf-fb').className='feedback good';}
-  else{st.combo=0;sfx.wrong();$('tf-fb').textContent=cur.isTrue?'It was TRUE':'It was FALSE';$('tf-fb').className='feedback bad';}
-  $('tf-s').textContent=st.sc;window._tfRound();}
+    <button class="back-link" onclick="resetArcade()">← Quit</button></div>`;
+  tfRound();
+  gameTimer=setInterval(()=>{const st=window._tf;if(!st||st.tok!==gameToken){clearInterval(gameTimer);return;}st.time--;$('tf-t').textContent=st.time;$('tf-bar').style.width=(st.time/60*100)+'%';if(st.time<=0){endGame('tf',st.sc,'✅ True or False',st.cor,st.ans,st.best);}},1000);}
+function tfRound(){const st=window._tf;if(!st||st.tok!==gameToken)return;st.cur=tfItem(st.lvl);$('tf-q').textContent=st.cur.statement;}
+function tfAns(v){const st=window._tf;if(!st||st.tok!==gameToken||!st.cur)return;st.ans++;
+  if(v===st.cur.isTrue){st.cor++;st.combo++;st.best=Math.max(st.best,st.combo);const pts=10+Math.min(st.combo,6)*2;st.sc+=pts;st.lvl=Math.min(3,1+Math.floor(st.combo/4));sfx.correct();addXP(2);flash('tf-combo','+'+pts+' '+comboTag(st.combo),'good');}
+  else{st.combo=0;st.lvl=1;sfx.wrong();flash('tf-combo',(st.cur.isTrue?'It was TRUE':'It was FALSE'),'bad');}
+  $('tf-s').textContent=st.sc;tfRound();}
 
 load();drawDuck();refreshHUD();applySettings();updateNavAvatar();renderHome();
 
@@ -626,17 +699,39 @@ function mc(correct,wrongs){correct=String(correct);let o=[correct];
 function frac(n,d){return n+'/'+d;}
 
 const GEN={
- g4u1(L){const dig=[3,4,5][L-1]||4;let s='',pos=-1;
-   for(let t=0;t<50;t++){s='';for(let i=0;i<dig;i++)s+=rint(i===0?1:0,9);
-     const uniq=[];for(let i=0;i<dig;i++){if(s[i]!=='0'&&s.split('').filter(c=>c===s[i]).length===1)uniq.push(i);}
-     if(uniq.length){pos=pickOne(uniq);break;}}
-   if(pos<0)pos=0;
-   const n=parseInt(s),d=+s[pos],place=dig-1-pos,val=d*Math.pow(10,place);
-   const wrongs=[d*Math.pow(10,place+1)];if(place>=1)wrongs.push(d);if(place>=2)wrongs.push(d*Math.pow(10,place-1));
-   let kk=place+2;while(wrongs.length<3&&kk<=7){const c=d*Math.pow(10,kk);if(c!==val&&!wrongs.includes(c))wrongs.push(c);kk++;}
-   return Object.assign({q:`What is the value of the ${d} in ${n.toLocaleString()}?`,
-     why:`The ${d} is in the ${['ones','tens','hundreds','thousands','ten-thousands'][place]} place, so it's worth ${val.toLocaleString()}.`},
-     mc(val,wrongs));},
+ g4u1(L){const r=Math.random();
+   /* (a) value of a unique digit in a big number */
+   if(r<.22){const dig=[3,4,5][L-1]||4;let s='',pos=-1;
+     for(let t=0;t<50;t++){s='';for(let i=0;i<dig;i++)s+=rint(i===0?1:0,9);
+       const uniq=[];for(let i=0;i<dig;i++){if(s[i]!=='0'&&s.split('').filter(c=>c===s[i]).length===1)uniq.push(i);}
+       if(uniq.length){pos=pickOne(uniq);break;}}
+     if(pos<0)pos=0;const n=parseInt(s),d=+s[pos],place=dig-1-pos,val=d*Math.pow(10,place);
+     const wrongs=[d*Math.pow(10,place+1)];if(place>=1)wrongs.push(d);if(place>=2)wrongs.push(d*Math.pow(10,place-1));
+     let kk=place+2;while(wrongs.length<3&&kk<=7){const c=d*Math.pow(10,kk);if(c!==val&&!wrongs.includes(c))wrongs.push(c);kk++;}
+     return Object.assign({q:`What is the value of the ${d} in ${n.toLocaleString()}?`,why:`The ${d} is in the ${['ones','tens','hundreds','thousands','ten-thousands'][place]} place, so it's worth ${val.toLocaleString()}.`},mc(val,wrongs));}
+   /* (b) the "10 times" place-value relationship */
+   if(r<.38){const pl=['ones','tens','hundreds','thousands'],i=rint(1,3);
+     return Object.assign({q:`A digit in the ${pl[i]} place is worth ___ a digit in the ${pl[i-1]} place.`,why:`Each place to the left is worth 10 times the place on its right.`},mc('10 times',['the same as','1/10 of','100 times']));}
+   /* (c) expanded form of a number */
+   if(r<.54){let n,parts;do{const dig=rint(3,4);let s='';for(let i=0;i<dig;i++)s+=rint(i===0?1:0,9);n=parseInt(s);
+       parts=[];for(let i=0;i<dig;i++){const d=+s[i],pl=(''+n).length-1-i;if(d)parts.push(d*Math.pow(10,pl));}}while(parts.length<2);
+     const correct=parts.join(' + ');
+     const w1=parts.map((p,i)=>i===0?p*10:p).join(' + ');
+     const w2=(''+n).split('').join(' + ');
+     const w3=parts.slice(0,-1).join(' + ');
+     return Object.assign({q:`Which is ${n.toLocaleString()} in expanded form?`,why:`Add the value of each non-zero digit: ${correct}.`},mc(correct,[w1,w2,w3]));}
+   /* (d) standard form from expanded form */
+   if(r<.70){let n,parts;do{const dig=rint(3,4);let s='';for(let i=0;i<dig;i++)s+=rint(i===0?1:0,9);n=parseInt(s);
+       parts=[];for(let i=0;i<dig;i++){const d=+s[i],pl=(''+n).length-1-i;if(d)parts.push(d*Math.pow(10,pl));}}while(parts.length<2);
+     return Object.assign({q:`${parts.join(' + ')} in standard form is:`,why:`Fill each place → ${n.toLocaleString()}.`},mc(n.toLocaleString(),[(n*10).toLocaleString(),(n+rint(1,9)*10).toLocaleString(),(n-1).toLocaleString()]));}
+   /* (e) compare two numbers */
+   if(r<.85){const dig=rint(3,4),lo=Math.pow(10,dig-1),hi=Math.pow(10,dig)-1;let a,b;
+     do{a=rint(lo,hi);b=a+(rint(1,80)-40);}while(a===b||b<lo||b>hi);
+     return {q:`Which is greater, ${a.toLocaleString()} or ${b.toLocaleString()}?`,o:[a.toLocaleString(),b.toLocaleString(),"they are equal","can't tell"],a:(a>b?0:1),why:`Compare left to right; ${(a>b?a:b).toLocaleString()} is greater.`};}
+   /* (f) rounding */
+   const rdig=rint(4,5);let rs='';for(let i=0;i<rdig;i++)rs+=rint(i===0?1:0,9);const rn=parseInt(rs);
+   const rpl=rdig===4?pickOne([100,1000]):pickOne([1000,10000]),rr=Math.round(rn/rpl)*rpl,rname={100:'hundred',1000:'thousand',10000:'ten thousand'}[rpl];
+   return Object.assign({q:`Round ${rn.toLocaleString()} to the nearest ${rname}.`,why:`Look at the digit just right of the ${rname} place: ${rn.toLocaleString()} rounds to ${rr.toLocaleString()}.`},mc(rr.toLocaleString(),[(rr+rpl).toLocaleString(),Math.max(0,rr-rpl).toLocaleString(),rn.toLocaleString(),(rr+2*rpl).toLocaleString()]));},
  g4u2(L){const hi=[9,12,25][L-1]||12;const r=Math.random();
    if(r<.33){const a=rint(2,hi),b=rint(2,9),nm=pickOne(['boxes','baskets','bags','shelves','rows']),it=pickOne(['apples','books','marbles','pencils','cookies']);
      return Object.assign({q:`There are ${a} ${nm} with ${b} ${it} in each. How many ${it} in all?`,why:`${a} × ${b} = ${a*b}.`},mc(a*b,[a*b+a,a*b-b,(a+1)*b]));}
@@ -730,14 +825,14 @@ const GEN={
 function renderPractice(){
   const grades=gorder.map(g=>{const G=GRADES[g];
     const btns=G.units.map(u=>`<button class="go-btn ghost" style="margin:4px" onclick="practiceRun(['${u.id}'],'${u.name}')">${u.icon} ${u.name}</button>`).join('');
-    return `<div class="lesson-box"><h3 style="color:${G.accent}">${G.emoji} ${G.name}</h3>
+    return `<div class="lesson-box"><h3 style="color:${G.accent}">${G.name}</h3>
       <div>${btns}</div>
-      <button class="go-btn" style="background:${G.accent};margin-top:10px" onclick="practiceRun([${G.units.map(u=>"'"+u.id+"'").join(',')}],'${G.name} — Mixed')">🎲 Mixed ${G.name}</button></div>`;}).join('');
-  $('practice').innerHTML=`<h2 class="section-title">✨ Practice (auto-generated)</h2>
+      <button class="go-btn" style="background:${G.accent};margin-top:10px" onclick="practiceRun([${G.units.map(u=>"'"+u.id+"'").join(',')}],'${G.name} — Mixed')">Mixed ${G.name}</button></div>`;}).join('');
+  $('practice').innerHTML=`<h2 class="section-title">Practice</h2>
     <p class="sub">Unlimited fresh questions that adapt to how you're doing — pick a topic or go mixed. Every answer comes with an explanation.</p>
     <div style="text-align:center;margin-bottom:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <button class="big-btn" style="background:var(--brand);color:#fff" onclick="practiceRun([${allUnitIds().map(id=>"'"+id+"'").join(',')}],'All Grades — Mixed')">🚀 Mixed practice (all grades)</button>
-      <button class="big-btn" style="background:var(--coral);color:#fff" onclick="practiceRun([${MSTOPICS.map(t=>"'"+t+"'").join(',')}],'🧠 Challenge — multi-step')">🧠 Challenge (multi-step)</button></div>
+      <button class="big-btn" style="background:var(--brand);color:#fff" onclick="practiceRun([${allUnitIds().map(id=>"'"+id+"'").join(',')}],'All Grades — Mixed')">Mixed practice (all grades)</button>
+      <button class="big-btn" style="background:var(--coral);color:#fff" onclick="practiceRun([${MSTOPICS.map(t=>"'"+t+"'").join(',')}],'Challenge — multi-step')">Challenge (multi-step)</button></div>
     ${grades}`;
 }
 function allUnitIds(){const a=[];gorder.forEach(g=>GRADES[g].units.forEach(u=>a.push(u.id)));return a;}

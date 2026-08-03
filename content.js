@@ -8,7 +8,7 @@ const GRADES = {
 
 /* =========================== GRADE 4 =========================== */
 g4:{ name:"Grade 4", short:"G4", emoji:"🌱", accent:"#22c55e",
- color:"linear-gradient(120deg,#22c55e,#86efac)",
+ color:"#0ea5a4",
  blurb:"Place value, multiplication, fractions, decimals & geometry.",
  placement:[
   {q:"What is the value of the 7 in 4,782?",o:["7","70","700","7,000"],a:2,u:0,why:"The 7 sits in the hundreds place, so its value is 7 × 100 = 700."},
@@ -25,7 +25,7 @@ g4:{ name:"Grade 4", short:"G4", emoji:"🌱", accent:"#22c55e",
  units:[
   {id:"g4u1",name:"Place Value & Big Numbers",icon:"🔢",code:"4.NBT",accent:"#22c55e",
    sections:[
-    {title:"Place Value to Thousands",iv:"placevalue",
+    {title:"Place Value to Thousands",iv:["placevalue","blocks"],
      teach:`<p>Numbers are built out of digits — the symbols 0, 1, 2, 3, 4, 5, 6, 7, 8, and 9. But a digit by itself doesn't tell the whole story. The digit <b>4</b> can mean four, or forty, or four hundred, or four thousand. What decides its meaning? Its <b>place</b>. In this lesson we'll learn how the position of a digit gives it its value, and why that idea is the foundation of every number you'll ever write.</p>
 
        <h4 class="ls-sub">Every digit has a place</h4>
@@ -36,7 +36,18 @@ g4:{ name:"Grade 4", short:"G4", emoji:"🌱", accent:"#22c55e",
          <div class="pv-col"><span class="pv-place">tens</span><span class="pv-digit">8</span><span class="pv-val">80</span></div>
          <div class="pv-col"><span class="pv-place">ones</span><span class="pv-digit">2</span><span class="pv-val">2</span></div>
        </div>
-       <p>The 2 really means 2, but the 8 doesn't mean eight — it means eight <i>tens</i>, or 80. The 4 means four <i>hundreds</i>, 400, and the 3 means three <i>thousands</i>, 3,000. So a digit's value is always the digit <b>times</b> the value of its place.</p>
+       <p>The 2 really means 2, but the 8 doesn't mean eight — it means eight <i>tens</i>, or 80. The 4 means four <i>hundreds</i>, 400, and the 3 means three <i>thousands</i>, 3,000. So a digit's value is always the digit <b>times</b> the value of its place. A chart that lays this out is called a <b>place value chart</b>.</p>
+
+       <h4 class="ls-sub">Modeling with base-ten blocks</h4>
+       <p>Another great way to <i>see</i> place value is with <b>base-ten blocks</b>. A small square is a <b>one</b>, a rod of ten small squares is a <b>ten</b> (10), a flat 10×10 square is a <b>hundred</b> (100), and a big cube is a <b>thousand</b> (1,000). To build <b>1,275</b> you grab 1 big cube, 2 flats, 7 rods, and 5 small squares. Count the blocks in each group and you get the digits: 1 · 2 · 7 · 5. Try the block builder below to model any number!</p>
+
+       <h4 class="ls-sub">Big numbers come in "periods"</h4>
+       <p>Once numbers get large, we group the places into chunks of three called <b>periods</b>, and separate the periods with <b>commas</b>. Reading right to left, the first period is the <b>ones period</b> (ones, tens, hundreds) and the next is the <b>thousands period</b> (thousands, ten-thousands, hundred-thousands). Look at <b>428,562</b> split into its two periods:</p>
+       <div class="pv-chart">
+         <div class="pv-col" style="min-width:150px"><span class="pv-place">thousands period</span><span class="pv-digit">428</span><span class="pv-val">hundred-, ten-, one-thousands</span></div>
+         <div class="pv-col" style="min-width:150px"><span class="pv-place">ones period</span><span class="pv-digit">562</span><span class="pv-val">hundreds, tens, ones</span></div>
+       </div>
+       <p>The comma is your friend: it lets you read a giant number by reading each period, then saying its name. So 428,562 reads as "four hundred twenty-eight <i>thousand</i>, five hundred sixty-two."</p>
 
        <h4 class="ls-sub">Expanded form: taking a number apart</h4>
        <p>When we write a number as the sum of what each digit is worth, we call it <b>expanded form</b>. For 3,482 that looks like:</p>
@@ -45,6 +56,7 @@ g4:{ name:"Grade 4", short:"G4", emoji:"🌱", accent:"#22c55e",
 
        <h4 class="ls-sub">The times-ten pattern</h4>
        <p>Here's the beautiful pattern that makes the whole system work: each place is worth <b>10 times</b> the place to its right. Ones → tens is ×10 (1 becomes 10). Tens → hundreds is ×10 again (10 becomes 100). Hundreds → thousands is ×10 once more (100 becomes 1,000). That's why our number system is called "base ten" — you can build any number, no matter how giant, just by grouping in tens.</p>
+       <p>This leads to a neat fact you'll be asked about a lot: <b>the same digit is worth 10 times as much each place you move it left.</b> In <b>44</b>, the left 4 (4 tens = 40) is worth 10 times the right 4 (4 ones = 4). In <b>770</b>, the 7 in the hundreds place (700) is worth 10 times the 7 in the tens place (70).</p>
        <div class="reallife"><b>Real life:</b> place value is how we read prices, populations, sports scores, and distances. The 7 in a $7,000 car means something very different from the 7 in a $7 sandwich — same digit, totally different place, totally different value.</div>
        <div class="watchout"><b>Common mistake:</b> reading a digit as just itself. In 3,482 the 4 is <i>not</i> worth 4 — it sits in the hundreds place, so it's worth 400. Always ask "which place is it in?" before you say the value.</div>
        <div class="watchout"><b>Another common mistake:</b> dropping a zero. In 2,905 you can't just write 2,95 — the 0 holds the tens place open so the 9 stays in the hundreds. Every place needs a digit, even if that digit is 0.</div>
@@ -55,12 +67,126 @@ g4:{ name:"Grade 4", short:"G4", emoji:"🌱", accent:"#22c55e",
      examples:[
       {title:"Find the value of a digit",steps:["Look at 5,297. What is the 2 worth?","Count the places from the right: ones, tens, hundreds — the 2 is in the hundreds place.","Value = 2 × 100 = 200."]},
       {title:"Build a number from words",steps:["'Three thousand, sixty' — start with the thousands: 3,000.","Sixty is 6 tens = 60. There are no hundreds, so put a 0 in that place.","Put it together: 3,060."]},
-      {title:"Write 2,905 in expanded form",steps:["2 thousands = 2,000; 9 hundreds = 900.","0 tens = 0 (nothing there); 5 ones = 5.","So 2,905 = 2,000 + 900 + 5."]}
+      {title:"Write 2,905 in expanded form",steps:["2 thousands = 2,000; 9 hundreds = 900.","0 tens = 0 (nothing there); 5 ones = 5.","So 2,905 = 2,000 + 900 + 5."]},
+      {title:"Read 152,847 using its periods",steps:["Split at the comma into two periods: 152 and 847.","Read the thousands period, then add its name: 'one hundred fifty-two thousand'.","Read the ones period: 'eight hundred forty-seven'. Together: one hundred fifty-two thousand, eight hundred forty-seven."]},
+      {title:"Model 1,275 with base-ten blocks",steps:["1,275 = 1 thousand, 2 hundreds, 7 tens, 5 ones.","Grab 1 big cube (1,000), 2 flats (200), 7 rods (70), and 5 small squares (5).","Count each group: 1 · 2 · 7 · 5 → that's 1,275."]}
      ],
      quiz:[
-      {q:"Value of the 6 in 6,204?",o:["6","600","6,000","60"],a:2,why:"6 is in the thousands place → 6,000."},
-      {q:"Which number has 8 in the tens place?",o:["8,000","480","818","208"],a:1,why:"480 → the 8 is tens (80)."},
-      {q:"Moving a digit one place LEFT makes it:",o:["10× bigger","10× smaller","the same","100× bigger"],a:0,why:"Each place left is ×10."}
+      {q:"What number do these base-ten blocks show?",vis:1243,o:["1,243","1,234","1,423","1,244"],a:0,why:"1 big cube = 1,000, 2 flats = 200, 4 rods = 40, 3 ones = 3 → 1,243."},
+      {q:"What number do these base-ten blocks show?",vis:1305,o:["1,305","1,350","1,035","135"],a:0,why:"1 thousand, 3 hundreds, 0 tens, 5 ones → 1,305 (the tens place is empty)."},
+      {q:"What is the value of the 5 in 359,842?",o:["50,000","5,000","500,000","5"],a:0,why:"The 5 is in the ten-thousands place, so it's worth 5 × 10,000 = 50,000."},
+      {q:"Which number has 8 in the tens place?",o:["8,000","480","818","208"],a:1,why:"In 480 the 8 is in the tens place (worth 80)."},
+      {q:"In 93,825, how many periods does the number have?",o:["2","1","3","5"],a:0,why:"825 is the ones period and 93 is the thousands period — two periods, split by the comma."},
+      {q:"The value of a 7 in the hundreds place is ___ the value of a 7 in the tens place.",o:["10 times as much","the same as","1/10 as much as","7 times as much"],a:0,why:"Each place to the left is worth 10 times the place to its right (700 is 10 × 70)."},
+      {q:"In 2,905, why does the 0 matter?",o:["It holds the tens place so the 9 stays in the hundreds","It makes the number bigger","It can be removed","It means the number is ten"],a:0,why:"0 is a placeholder — without it the 9 and 2 would slide into the wrong (smaller) places."},
+      {q:"What is the value of the 4 in 748,612?",o:["40,000","4,000","400,000","4"],a:0,why:"The 4 is in the ten-thousands place → 4 × 10,000 = 40,000."},
+      {q:"In 550, the 5 in the hundreds place is worth how many times the 5 in the tens place?",o:["10","5","100","2"],a:0,why:"500 is 10 times 50 — each place left is worth 10 times the one on its right."},
+      {q:"Which number has a 3 worth 30,000?",o:["638,000","3,842","300,000","93,000"],a:0,why:"In 638,000 the 3 sits in the ten-thousands place, so it's worth 30,000."}
+     ]},
+    {title:"Read & Write Numbers",iv:["forms","placevalue"],
+     teach:`<p>There are three ways to write the same number, and knowing all three makes you a fluent "reader" of numbers. They're called <b>standard form</b>, <b>word form</b>, and <b>expanded form</b> — different outfits for the exact same number.</p>
+
+       <h4 class="ls-sub">Standard form</h4>
+       <p><b>Standard form</b> is the normal way you write a number with digits: <b>564,087</b>. This is what you see on price tags, scoreboards, and license plates.</p>
+
+       <h4 class="ls-sub">Word form</h4>
+       <p><b>Word form</b> is the number written out in words, exactly how you'd say it out loud. The trick is to read one <b>period</b> at a time and add the period's name. So 564,087 is "<b>five hundred sixty-four thousand, eighty-seven</b>." Notice the word "thousand" after the first period, and a comma in the same spot as the number's comma.</p>
+       <p>One writing rule: two-word numbers from twenty-one to ninety-nine get a <b>hyphen</b> — "sixty-four," "eighty-seven."</p>
+
+       <h4 class="ls-sub">Expanded form</h4>
+       <p><b>Expanded form</b> breaks the number into the value of each digit added together: <b>564,087 = 500,000 + 60,000 + 4,000 + 80 + 7</b>. Notice there's no term for the hundreds place — because that digit is 0, it contributes nothing, so we just skip it.</p>
+       <div class="reallife"><b>Real life:</b> checks use two forms at once — you write the amount in standard form in the box ($1,250) and in word form on the line ("one thousand two hundred fifty").</div>
+       <div class="watchout"><b>Common mistake:</b> forgetting the period name in word form. "564,087" is not "five hundred sixty-four, eighty-seven" — you must say "…sixty-four <b>thousand</b>, eighty-seven."</div>
+       <div class="watchout"><b>Another common mistake:</b> writing a 0 place in expanded form. A 0 digit is worth nothing, so it's left out of the sum — you don't write "+ 0".</div>
+
+       <h4 class="ls-sub">Recap</h4>
+       <p>Every number has three outfits: <b>standard form</b> (digits), <b>word form</b> (words, read period by period), and <b>expanded form</b> (the value of each digit added up). Being able to switch between them means you truly understand the number.</p>
+       <div class="keybox">Standard: 564,087 · Word: five hundred sixty-four thousand, eighty-seven · Expanded: 500,000 + 60,000 + 4,000 + 80 + 7.</div>`,
+     examples:[
+      {title:"Write 38,650 in expanded form",steps:["Name each nonzero digit's value: 3 ten-thousands = 30,000; 8 thousands = 8,000; 6 hundreds = 600; 5 tens = 50.","The ones place is 0, so skip it.","Expanded form: 30,000 + 8,000 + 600 + 50."]},
+      {title:"Write the word form of 40,030",steps:["Split into periods: 40 | 030.","Thousands period: 'forty thousand'. Ones period: 'thirty'.","Together: forty thousand, thirty."]},
+      {title:"Turn expanded form into standard form",steps:["600,000 + 40,000 + 2,000 + 50.","Fill each place; the hundreds and ones places are missing, so they're 0.","Standard form: 642,050."]},
+      {title:"Fill out a check for $1,250",steps:["Standard form goes in the box: $1,250.","Word form goes on the line: 'one thousand two hundred fifty'.","Both show the same amount — that's why a check uses both forms."]}
+     ],
+     quiz:[
+      {q:"Which shows 6,038 in expanded form?",o:["6,000 + 30 + 8","6,000 + 300 + 8","600 + 30 + 8","6,000 + 38"],a:0,why:"6 thousands + 0 hundreds + 3 tens + 8 ones = 6,000 + 30 + 8."},
+      {q:"Write 'four thousand sixty' in standard form:",o:["4,060","4,600","460","4,006"],a:0,why:"4 thousands, 0 hundreds, 6 tens, 0 ones → 4,060."},
+      {q:"Word form of 40,030 is:",o:["forty thousand, thirty","four thousand, thirty","forty thousand, three hundred","forty-three thousand"],a:0,why:"40 in the thousands period, 030 in the ones period → forty thousand, thirty."},
+      {q:"500,000 + 40,000 + 3,000 + 200 + 90 + 8 in standard form:",o:["543,298","54,398","543,908","530,298"],a:0,why:"Fill each place: 5,4,3,2,9,8 → 543,298."},
+      {q:"Newton reads 6,500 as 'six thousand five hundred.' Descartes reads it as 'sixty-five hundred.' Who is correct?",o:["Both are correct","Only Newton","Only Descartes","Neither"],a:0,why:"Both name the same value — 6,500 can be read either way."},
+      {q:"Which is 305,072 in word form?",o:["three hundred five thousand, seventy-two","three hundred fifty thousand, seventy-two","thirty-five thousand, seventy-two","three hundred five thousand, seven hundred two"],a:0,why:"305 in the thousands period, 072 in the ones period → three hundred five thousand, seventy-two."},
+      {q:"Standard form of 'one hundred five thousand, ninety-eight':",o:["105,098","150,098","105,980","100,598"],a:0,why:"105 thousands, then 098 → 105,098 (the 0 holds the hundreds place)."},
+      {q:"Expanded form of 93,517:",o:["90,000 + 3,000 + 500 + 10 + 7","9,000 + 3,000 + 500 + 10 + 7","90,000 + 3,000 + 517","93,000 + 500 + 17"],a:0,why:"9 ten-thousands + 3 thousands + 5 hundreds + 1 ten + 7 ones."}
+     ]},
+    {title:"Compare Numbers",iv:"comparetool",
+     teach:`<p>Which number is bigger, 27,890 or 27,951? To compare multi-digit numbers you don't guess — you use place value, and you always start from the <b>left</b>.</p>
+
+       <h4 class="ls-sub">Line them up and compare left to right</h4>
+       <p>Write the numbers in a place value chart, lined up by place. Then compare digits <b>one place at a time, starting with the biggest place</b>. Keep going until you find the <b>first place where the digits differ</b> — that place decides the winner, and you can stop.</p>
+       <p>For 27,890 vs 27,951: ten-thousands match (2 = 2), thousands match (7 = 7), then hundreds differ — 8 vs 9. Since 9 &gt; 8, <b>27,951 is greater</b>. You don't even need to look at the tens or ones.</p>
+
+       <h4 class="ls-sub">A shortcut: count the digits</h4>
+       <p>If two numbers have a different number of digits, the one with <b>more digits</b> is automatically bigger (as long as there are no leading zeros). 38,675 has five digits and 9,100 has four, so 38,675 is greater — even though it starts with a smaller digit.</p>
+
+       <h4 class="ls-sub">Comparison symbols</h4>
+       <p>We write comparisons with <b>&gt;</b> (greater than), <b>&lt;</b> (less than), and <b>=</b> (equal). A handy memory trick: the symbol is a little mouth that always opens toward the <b>bigger</b> number. So 6,052 &lt; 6,520.</p>
+       <div class="reallife"><b>Real life:</b> comparing numbers is how you find the cheaper price, the taller mountain, the bigger city population, or the higher score.</div>
+       <div class="watchout"><b>Common mistake:</b> comparing from the right. Always start at the <b>left</b> (the biggest place) — the first place that differs decides everything.</div>
+       <div class="watchout"><b>Another common mistake:</b> thinking a number that "looks longer" or starts with a big digit is bigger. Line up the places first; 4 hundreds beats 9 tens.</div>
+
+       <h4 class="ls-sub">Recap</h4>
+       <p>To compare, line the numbers up by place and scan from the <b>left</b>. The <b>first place where the digits differ</b> decides which is greater. More digits usually means bigger, and the &gt;/&lt; symbol opens toward the larger number.</p>
+       <div class="keybox">Compare left to right; the first differing place wins. 27,890 &lt; 27,951 (8 hundreds &lt; 9 hundreds).</div>`,
+     examples:[
+      {title:"Compare 8,465 and 8,439",steps:["Thousands match (8 = 8) and hundreds match (4 = 4).","Move to the tens: 6 vs 3. They differ.","6 tens > 3 tens, so 8,465 > 8,439."]},
+      {title:"Which is greater, 5,049 or 5,082?",steps:["Thousands match (5), hundreds match (0).","Tens: 4 vs 8 — they differ. 8 > 4.","So 5,082 is greater."]},
+      {title:"Order 245,190; 245,140; 254,020 from least to greatest",steps:["254,020 has 5 ten-thousands vs 4 — it's the biggest.","Between 245,190 and 245,140, everything matches until the tens: 9 vs 4, so 245,140 is smaller.","Least to greatest: 245,140; 245,190; 254,020."]},
+      {title:"Pick the symbol for 6,052 and 6,520",steps:["Thousands match (6). Hundreds: 0 vs 5 — they differ.","0 hundreds < 5 hundreds, so 6,052 is the smaller number.","Write 6,052 < 6,520 — the < opens toward the bigger number."]}
+     ],
+     quiz:[
+      {q:"Which is greater, 27,890 or 27,951?",o:["27,951","27,890","they are equal","can't tell"],a:0,why:"First differing place is the hundreds: 9 > 8, so 27,951 is greater."},
+      {q:"Comparing 8,465 and 8,439, which place decides the answer?",o:["the tens place","the ones place","the hundreds place","the thousands place"],a:0,why:"Thousands and hundreds match; the tens (6 vs 3) are the first to differ."},
+      {q:"Which symbol makes it true: 6,052 __ 6,520 ?",o:["<",">","=","+"],a:0,why:"6,052 is less than 6,520 (0 hundreds < 5 hundreds), so use <."},
+      {q:"Order least to greatest: 245,190; 245,140; 254,020",o:["245,140; 245,190; 254,020","245,190; 245,140; 254,020","254,020; 245,190; 245,140","245,140; 254,020; 245,190"],a:0,why:"245,140 < 245,190 < 254,020."},
+      {q:"Two TVs cost $1,598 and $1,998. Which is the lesser price?",o:["$1,598","$1,998","they cost the same","can't tell"],a:0,why:"Hundreds place: 5 < 9, so $1,598 is less."},
+      {q:"Which symbol makes it true: 509,733 __ 500,973 ?",o:[">","<","=","+"],a:0,why:"Thousands place: 9 > 0, so 509,733 is greater. The symbol opens toward the bigger number."},
+      {q:"Which number is between 23,489 and 26,472?",o:["25,000","23,000","27,000","26,900"],a:0,why:"25,000 is greater than 23,489 and less than 26,472."},
+      {q:"Order from greatest to least: 245,190; 254,020; 245,140",o:["254,020; 245,190; 245,140","245,190; 254,020; 245,140","254,020; 245,140; 245,190","245,140; 245,190; 254,020"],a:0,why:"254,020 is biggest; then 245,190 > 245,140 (9 tens > 4 tens)."}
+     ]},
+    {title:"Round Multi-Digit Numbers",iv:"roundline",
+     teach:`<p>Rounding replaces a number with a nearby, "rounder" number that's easier to work with — like saying a stadium holds "about 50,000 people" instead of 49,142. You round to a chosen place: the nearest ten, hundred, thousand, ten-thousand, and so on.</p>
+
+       <h4 class="ls-sub">The place-value rule</h4>
+       <p>To round, follow three steps. <b>1)</b> Find the <b>rounding place</b> (the place you're rounding to). <b>2)</b> Look at the <b>digit just to its right</b>. If that digit is <b>5 or more</b>, round the rounding digit <b>up</b> by one; if it's <b>less than 5</b>, the rounding digit <b>stays the same</b>. <b>3)</b> Change every digit to the right of the rounding place to <b>0</b>.</p>
+       <p>Round <b>214,573</b> to the nearest hundred-thousand. The hundred-thousands digit is 2, and the digit to its right (ten-thousands) is 1. Since 1 &lt; 5, the 2 stays, and everything to the right becomes 0: <b>200,000</b>.</p>
+
+       <h4 class="ls-sub">Why the number line helps</h4>
+       <p>Every number sits between two "round" numbers. 4,276 is between 4,000 and 5,000; the halfway point is 4,500. Since 4,276 is to the <i>left</i> of halfway, it's closer to 4,000, so it rounds <b>down</b> to 4,000. That halfway idea is exactly what the "5 or more" rule checks — 5 is the halfway digit.</p>
+
+       <h4 class="ls-sub">Rounding up can cause a chain</h4>
+       <p>Sometimes rounding up bumps a 9 to 10 and the carry ripples left. Round <b>5,953</b> to the nearest hundred: the hundreds digit is 9, and the tens digit (5) says round up. 9 becomes 10, which carries — so 5,953 rounds to <b>6,000</b>, not 5,900. Watch for this!</p>
+       <div class="reallife"><b>Real life:</b> a car battery might be due at "about 50,000 miles," a furnace reaches "about 2,000°F," and populations are reported rounded. But some things — like an exact census count or a bank balance — need the exact number, not a rounded one.</div>
+       <div class="watchout"><b>Common mistake:</b> looking at the wrong digit. You only check the <b>one</b> digit immediately to the right of the rounding place — not the whole number, and not several digits.</div>
+       <div class="watchout"><b>Another common mistake:</b> forgetting to zero out. After you decide up or down, every digit to the right of the rounding place must become 0.</div>
+
+       <h4 class="ls-sub">Recap</h4>
+       <p>Find the rounding place, peek at the digit just to its right (5+ rounds up, less than 5 stays), then zero out everything to the right. A number line shows the same thing: numbers past the halfway point round up.</p>
+       <div class="keybox">Look one digit to the right of the rounding place: 5 or more rounds up, less than 5 stays. Then zero out the rest.</div>`,
+     examples:[
+      {title:"Round 4,276 to the nearest thousand",steps:["Rounding place = thousands (the 4). Look one right: the hundreds digit is 2.","2 is less than 5, so the 4 stays.","Zero out the rest → 4,000."]},
+      {title:"Round 385,617 to the nearest ten-thousand",steps:["Rounding place = ten-thousands (the 8). Look one right: the thousands digit is 5.","5 means round up: 8 becomes 9.","Zero out the rest → 390,000."]},
+      {title:"Round 5,953 to the nearest hundred (a carry!)",steps:["Rounding place = hundreds (the 9). Look one right: the tens digit is 5 → round up.","9 + 1 = 10, so it carries: the thousands 5 becomes 6.","Zero out the rest → 6,000."]},
+      {title:"Which car needs a battery (~50,000 mi)?",steps:["Round each odometer reading to the nearest ten-thousand.","53,798 → 50,000 (the thousands digit, 3, is less than 5, so round down).","So a car showing 53,798 miles is 'about 50,000' — time for a new battery."]}
+     ],
+     quiz:[
+      {q:"Round 6,251 to the nearest thousand:",o:["6,000","7,000","6,300","6,200"],a:0,why:"Look at the hundreds digit (2). It's less than 5, so the 6 stays → 6,000."},
+      {q:"Round 43,976 to the nearest hundred:",o:["44,000","43,900","43,980","44,100"],a:0,why:"Look at the tens digit (7): round up. 9 hundreds → carries → 44,000."},
+      {q:"Round 70,628 to the nearest ten thousand:",o:["70,000","80,000","71,000","70,600"],a:0,why:"Look at the thousands digit (0): less than 5, so 7 stays → 70,000."},
+      {q:"Round 214,573 to the nearest hundred thousand:",o:["200,000","300,000","210,000","214,000"],a:0,why:"Look at the ten-thousands digit (1): less than 5, so 2 stays → 200,000."},
+      {q:"Round 57,496 to the nearest thousand:",o:["57,000","58,000","57,500","60,000"],a:0,why:"Look at the hundreds digit (4): less than 5, so 7 stays → 57,000."},
+      {q:"To round 3,641 to the nearest hundred, which digit do you look at?",o:["the tens digit","the ones digit","the hundreds digit","the thousands digit"],a:0,why:"You check the digit just to the RIGHT of the hundreds place — that's the tens digit."},
+      {q:"Your friend says 5,953 rounds to 5,053 at the nearest hundred. Correct?",o:["No — it rounds to 6,000","Yes","It rounds to 5,900","It rounds to 5,000"],a:0,why:"Tens digit is 5, so round up. The 9 carries → 6,000."},
+      {q:"A battery is due at about 50,000 miles. Which odometer rounds to 50,000 (nearest ten-thousand)?",o:["53,798","44,534","35,961","5,617"],a:0,why:"53,798: thousands digit 3 < 5, so it rounds down to 50,000. The others don't."}
      ]},
     {title:"Adding & Subtracting Big Numbers",iv:null,
      teach:`<p>Once you understand place value, adding and subtracting big numbers becomes surprisingly simple — you just handle one place at a time. The whole trick is keeping your columns lined up so that ones sit under ones, tens under tens, and hundreds under hundreds. Get the line-up right and the rest is easy.</p>
@@ -92,16 +218,23 @@ g4:{ name:"Grade 4", short:"G4", emoji:"🌱", accent:"#22c55e",
      quiz:[
       {q:"463 + 218 =",o:["681","671","581","691"],a:0,why:"3+8=11 carry, 6+1+1=8, 4+2=6 → 681."},
       {q:"500 − 236 =",o:["264","364","274","236"],a:0,why:"500−236 = 264."},
-      {q:"When a column adds to 10 or more you:",o:["borrow","carry","stop","subtract"],a:1,why:"Carry to the next place."}
+      {q:"When a column adds to 10 or more you:",o:["borrow","carry","stop","subtract"],a:1,why:"Carry to the next place."},
+      {q:"A team scored 1,240 points, then 985 more. Total?",o:["2,225","2,125","2,235","255"],a:0,why:"1,240 + 985 = 2,225."},
+      {q:"Estimate 682 − 419 by rounding to the nearest hundred:",o:["about 300","about 100","about 1,100","about 250"],a:0,why:"700 − 400 = 300, so the answer is close to 300 (exact is 263)."},
+      {q:"6,000 − 2,375 =",o:["3,625","3,725","4,375","3,635"],a:0,why:"Borrow across the zeros: 6,000 − 2,375 = 3,625."}
      ]}
    ],
    test:[
-    {q:"Value of the 9 in 9,152?",o:["9","900","9,000","90"],a:2,why:"The 9 is in the thousands place, so it's worth 9 × 1,000 = 9,000."},
-    {q:"Write 'four thousand sixty' in digits:",o:["4,600","4,060","460","4,006"],a:1,why:"4 thousands, 0 hundreds, 6 tens, 0 ones → 4,060. The 0 in the hundreds place holds it open."},
+    {q:"What is the value of the 5 in 685,726?",o:["5,000","500","50,000","5"],a:0,why:"The 5 is in the thousands place, so it's worth 5 × 1,000 = 5,000."},
+    {q:"Write 'four thousand sixty' in digits:",o:["4,060","4,600","460","4,006"],a:0,why:"4 thousands, 0 hundreds, 6 tens, 0 ones → 4,060. The 0 in the hundreds place holds it open."},
     {q:"Which shows 6,038 in expanded form?",o:["6,000 + 30 + 8","6,000 + 300 + 8","600 + 30 + 8","6,000 + 38"],a:0,why:"6 thousands + 0 hundreds + 3 tens + 8 ones = 6,000 + 30 + 8."},
-    {q:"A stadium had 3,450 fans and 1,275 more arrived. How many now?",o:["4,725","4,625","2,175","4,715"],a:0,why:"Add 3,450 + 1,275: 0+5=5, 5+7=12 (write 2, carry 1), 4+2+1=7, 3+1=4 → 4,725."},
-    {q:"A shop had 803 apples and sold 259. How many left?",o:["544","644","554","546"],a:0,why:"Subtract 803 − 259, borrowing: 13−9=4, 9−5=4, 7−2=5 → 544."},
-    {q:"Sara saved $1,250, then spent $675. How much is left?",o:["$575","$675","$1,925","$585"],a:0,why:"1,250 − 675 = 575. Quick check: 1,250 − 700 ≈ 550, and 575 is close."}
+    {q:"Word form of 40,030 is:",o:["forty thousand, thirty","four thousand, thirty","forty thousand, three hundred","forty-three thousand"],a:0,why:"40 in the thousands period and 030 in the ones period → forty thousand, thirty."},
+    {q:"Which is greater, 324,581 or 342,581?",o:["342,581","324,581","they are equal","can't tell"],a:0,why:"First differing place is the ten-thousands: 4 > 2, so 342,581 is greater."},
+    {q:"The value of the 4 in the hundreds place is ___ the value of the 4 in the tens place.",o:["10 times as much","the same as","1/10 as much as","100 times as much"],a:0,why:"Each place to the left is worth 10 times the place to its right (400 is 10 × 40)."},
+    {q:"Saturn is 365,882 km around; Jupiter is 439,264 km around. Which distance is greater?",o:["439,264 km","365,882 km","they are equal","can't tell"],a:0,why:"Hundred-thousands: 4 > 3, so 439,264 is greater."},
+    {q:"Newton says 38,675 is less than 9,100 because 3 is less than 9. Is he right?",o:["No — 38,675 is greater (it has more digits)","Yes, he's right","They are equal","Can't tell"],a:0,why:"38,675 has 5 digits and 9,100 has 4, so 38,675 is much greater — you compare place value, not just the first digit."},
+    {q:"A stadium had 3,450 fans and 1,275 more arrived. How many now?",o:["4,725","4,625","2,175","4,715"],a:0,why:"3,450 + 1,275 = 4,725."},
+    {q:"A shop had 803 apples and sold 259. How many are left?",o:["544","644","554","546"],a:0,why:"803 − 259 = 544 (borrow across the zero: 13−9=4, 9−5=4, 7−2=5)."}
    ]},
 
   {id:"g4u2",name:"Multiplication & Division",icon:"✖️",code:"4.OA/NBT",accent:"#38bdf8",
@@ -394,18 +527,26 @@ g4:{ name:"Grade 4", short:"G4", emoji:"🌱", accent:"#22c55e",
    ]},
  ],
  finalTest:[
-  {q:"Value of the 4 in 3,481?",o:["4","40","400","4,000"],a:2,why:"Hundreds → 400."},
+  {q:"What is the value of the 4 in 3,481?",o:["400","4","40","4,000"],a:0,why:"The 4 is in the hundreds place → 400."},
+  {q:"Word form of 20,030 is:",o:["twenty thousand, thirty","two thousand, thirty","twenty thousand, three hundred","twenty-three thousand"],a:0,why:"20 in the thousands period, 030 in the ones period → twenty thousand, thirty."},
+  {q:"Which is 305,072 in expanded form?",o:["300,000 + 5,000 + 70 + 2","300,000 + 50,000 + 70 + 2","30,000 + 5,000 + 70 + 2","300,000 + 5,000 + 700 + 2"],a:0,why:"3 hundred-thousands + 5 thousands + 7 tens + 2 ones."},
+  {q:"Which is greater, 618,457 or 619,457?",o:["619,457","618,457","they are equal","can't tell"],a:0,why:"First differing place is the thousands: 9 > 8, so 619,457 is greater."},
+  {q:"Round 57,496 to the nearest thousand:",o:["57,000","58,000","57,500","60,000"],a:0,why:"Hundreds digit 4 < 5, so round down → 57,000."},
+  {q:"Round 214,573 to the nearest hundred thousand:",o:["200,000","300,000","210,000","214,000"],a:0,why:"Ten-thousands digit 1 < 5, so round down → 200,000."},
   {q:"A carton holds 6 eggs. How many eggs in 7 cartons?",o:["42","48","36","49"],a:0,why:"7 × 6 = 42."},
+  {q:"45 marbles shared equally by 9 kids — each gets:",o:["5","4","6","7"],a:0,why:"45 ÷ 9 = 5."},
   {q:"Which equals 1/2?",o:["3/6","2/3","1/3","3/4"],a:0,why:"3/6 = 1/2."},
-  {q:"0.7 as a fraction:",o:["7/10","7/100","1/7","70"],a:0,why:"7 tenths."},
-  {q:"A 90° angle is a:",o:["acute","right","obtuse","straight"],a:1,why:"Right angle."},
-  {q:"Area of a 5 by 4 rectangle:",o:["20","18","9","40"],a:0,why:"5×4 = 20."}
+  {q:"2/7 + 4/7 =",o:["6/7","6/14","8/7","6/49"],a:0,why:"Same bottom → add tops → 6/7."},
+  {q:"0.7 as a fraction:",o:["7/10","7/100","1/7","70"],a:0,why:"0.7 is seven tenths = 7/10."},
+  {q:"Which is bigger, 0.8 or 0.75?",o:["0.8","0.75","they are equal","can't tell"],a:0,why:"0.80 > 0.75."},
+  {q:"A 90° angle is a:",o:["right angle","acute angle","obtuse angle","straight angle"],a:0,why:"Exactly 90° is a right angle."},
+  {q:"Area of a 5 by 4 rectangle:",o:["20","18","9","40"],a:0,why:"5 × 4 = 20 square units."}
  ]
 },
 
 /* =========================== GRADE 5 =========================== */
 g5:{ name:"Grade 5", short:"G5", emoji:"⭐", accent:"#38bdf8",
- color:"linear-gradient(120deg,#38bdf8,#0ea5e9)",
+ color:"#2f54eb",
  blurb:"Decimals, operations, multiplying & dividing fractions, volume & graphing.",
  placement:[
   {q:"In 4.36, the 6 is in the:",o:["tenths","hundredths","ones","thousandths"],a:1,u:0,why:"The 6 is the second digit after the dot — the hundredths place."},
@@ -662,7 +803,7 @@ g5:{ name:"Grade 5", short:"G5", emoji:"⭐", accent:"#38bdf8",
 
 /* =========================== GRADE 6 =========================== */
 g6:{ name:"Grade 6", short:"G6", emoji:"🚀", accent:"#0ea5e9",
- color:"linear-gradient(120deg,#0ea5e9,#fb7185)",
+ color:"#5b52e0",
  blurb:"Ratios, dividing fractions, negatives, equations, geometry & data.",
  placement:[
   {q:"The ratio of 6 dogs to 3 cats simplifies to:",o:["2:1","3:1","6:3 only","1:2"],a:0,u:0,why:"Divide both parts by 3: 6:3 = 2:1."},

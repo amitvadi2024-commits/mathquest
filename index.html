@@ -4,24 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MathQuest — Fun Math for Grades 4–6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* clean sky-blue / teal / coral palette */
-    --brand:#0ea5e9; --brand-d:#0284c7; --teal:#14b8a6; --sky:#38bdf8;
-    --coral:#fb7185; --amber:#f59e0b; --yellow:#fbbf24; --green:#22c55e; --green-l:#86efac; --red:#ef4444;
-    --bg:#eef4f9; --card:#ffffff; --text:#0f2942; --muted:#5f7189; --line:#e2e8f0;
+    /* clean & modern: confident blue, slate neutrals, restrained accents */
+    --brand:#2f54eb; --brand-d:#1d3fd1; --teal:#0ea5a4; --sky:#4c8dff;
+    --coral:#f2637e; --amber:#f2a33c; --yellow:#f7c948; --green:#27ae60; --green-l:#9ae6b4; --red:#e14b4b;
+    --bg:#f7f9fc; --card:#ffffff; --text:#101828; --muted:#667085; --line:#e7ebf1;
+    --heading:'Inter',system-ui,-apple-system,sans-serif;
     /* legacy aliases so older class/JS refs still theme correctly */
-    --purple:#0ea5e9; --purple-dark:#0284c7; --pink:#fb7185; --blue:#38bdf8; --orange:#f59e0b;
+    --purple:#2f54eb; --purple-dark:#1d3fd1; --pink:#f2637e; --blue:#4c8dff; --orange:#f2a33c;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Nunito','Trebuchet MS','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden}
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,.logo,.hero h1,.grade-card h3,.dash-tile .big,.result .score{font-family:var(--heading);letter-spacing:-.01em}
 
-  header{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:0 1px 0 var(--line);position:sticky;top:0;z-index:50}
-  nav{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:5px;padding:9px 16px;flex-wrap:wrap}
-  .logo{font-size:1.28rem;font-weight:800;color:var(--brand);margin-right:auto;cursor:pointer;display:flex;align-items:center;gap:7px}
-  .logo small{display:block;font-size:.55rem;color:var(--muted);font-weight:700;letter-spacing:1.5px}
-  .tab-btn{border:none;background:transparent;font-size:.82rem;font-weight:700;color:var(--muted);padding:7px 11px;border-radius:12px;cursor:pointer;transition:.15s}
-  .tab-btn:hover{background:var(--bg);color:var(--brand)}
+  header{background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  nav{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:4px;padding:10px 16px;flex-wrap:wrap}
+  .logo{font-size:1.22rem;font-weight:700;color:var(--text);margin-right:auto;cursor:pointer;display:flex;align-items:center;gap:9px}
+  .logo .logomark{width:26px;height:26px;flex-shrink:0}
+  .logo small{display:block;font-size:.54rem;color:var(--muted);font-weight:600;letter-spacing:1.5px;font-family:'Inter',sans-serif}
+  .tab-btn{border:none;background:transparent;font-size:.82rem;font-weight:600;color:var(--muted);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.15s}
+  .tab-btn:hover{background:var(--bg);color:var(--text)}
   .tab-btn.active{background:var(--brand);color:#fff}
   .pill{color:#fff;font-weight:800;padding:6px 11px;border-radius:12px;font-size:.82rem;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
   .streak-pill{background:var(--coral)}
@@ -39,39 +45,42 @@
   @keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
-  /* hero — calm, single soft gradient */
-  .hero{position:relative;overflow:hidden;color:#fff;border-radius:24px;padding:34px 30px;margin-bottom:24px;
-    background:linear-gradient(120deg,var(--brand),var(--teal));display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  /* hero — clean, refined gradient */
+  .hero{position:relative;overflow:hidden;color:#fff;border-radius:20px;padding:38px 32px;margin-bottom:26px;
+    background:var(--brand);display:flex;align-items:center;gap:24px;flex-wrap:wrap}
   .hero .htext{flex:1;min-width:230px}
-  .hero .grade-badge{display:inline-block;background:rgba(255,255,255,.22);padding:5px 15px;border-radius:20px;font-weight:800;font-size:.8rem;margin-bottom:10px}
-  .hero h1{font-size:2rem;margin-bottom:8px}
-  .hero p{font-size:1rem;opacity:.96;margin-bottom:18px}
-  .hero .duck-hero{width:120px;flex-shrink:0;opacity:.95}
-  .big-btn{background:#fff;color:var(--brand);border:none;font-size:1rem;font-weight:800;padding:13px 26px;border-radius:14px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.12);transition:.1s}
-  .big-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+  .hero .grade-badge{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:5px 14px;border-radius:8px;font-weight:600;font-size:.78rem;margin-bottom:12px;letter-spacing:.02em}
+  .hero h1{font-size:2.05rem;margin-bottom:10px;font-weight:700}
+  .hero p{font-size:1rem;opacity:.92;margin-bottom:20px;max-width:48ch}
+  .hero .duck-hero{width:112px;flex-shrink:0;opacity:.95}
+  .big-btn{background:#fff;color:var(--brand-d);border:none;font-size:.98rem;font-weight:600;padding:12px 24px;border-radius:10px;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.12);transition:.15s}
+  .big-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.18)}
 
-  .grade-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:26px}
-  .grade-card{border-radius:18px;padding:22px;color:#fff;cursor:pointer;position:relative;overflow:hidden;transition:.16s;box-shadow:0 6px 16px rgba(15,41,66,.10)}
-  .grade-card:hover{transform:translateY(-5px)}
-  .grade-card h3{font-size:1.4rem;margin-bottom:4px}
-  .grade-card p{font-size:.84rem;opacity:.95;margin-bottom:14px;min-height:38px}
-  .grade-card .gc-prog{height:8px;background:rgba(255,255,255,.35);border-radius:8px;overflow:hidden}
+  .grade-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:28px}
+  .grade-card{border-radius:16px;padding:22px;color:#fff;cursor:pointer;position:relative;overflow:hidden;transition:.18s;box-shadow:0 1px 2px rgba(16,24,40,.06)}
+  .grade-card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(16,24,40,.16)}
+  .grade-card h3{font-size:1.35rem;margin-bottom:4px;font-weight:700}
+  .grade-card p{font-size:.84rem;opacity:.92;margin-bottom:14px;min-height:38px}
+  .grade-card .gc-prog{height:7px;background:rgba(255,255,255,.28);border-radius:8px;overflow:hidden}
   .grade-card .gc-prog>span{display:block;height:100%;width:0;background:#fff;transition:width .5s}
-  .grade-card .gc-emoji{font-size:2.2rem}
+  .grade-card .gc-emoji{font-size:2rem;opacity:.95}
+  .grade-card .gc-tag{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.28);font-size:.72rem;font-weight:600;letter-spacing:.04em;padding:2px 9px;border-radius:6px;margin-bottom:10px}
 
-  .stats{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
-  .stat{flex:1;min-width:110px;background:var(--card);border-radius:16px;padding:15px;text-align:center;box-shadow:0 3px 12px rgba(15,41,66,.06)}
-  .stat .num{font-size:1.5rem;font-weight:800;color:var(--brand)}
-  .stat .label{font-size:.76rem;color:var(--muted)}
+  .stats{display:flex;gap:12px;margin-bottom:26px;flex-wrap:wrap}
+  .stat{flex:1;min-width:110px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+  .stat .num{font-size:1.5rem;font-weight:700;color:var(--brand);font-family:var(--heading)}
+  .stat .label{font-size:.76rem;color:var(--muted);margin-top:2px}
 
-  h2.section-title{font-size:1.3rem;margin-bottom:6px}
-  .sub{color:var(--muted);margin-bottom:16px}
-  .back-link{background:none;border:none;color:var(--brand);font-weight:800;cursor:pointer;margin-bottom:12px;font-size:.9rem}
+  h2.section-title{font-size:1.32rem;margin-bottom:6px;font-weight:600}
+  .sub{color:var(--muted);margin-bottom:18px;font-size:.95rem}
+  .back-link{background:none;border:none;color:var(--brand);font-weight:600;cursor:pointer;margin-bottom:14px;font-size:.9rem}
+  .back-link:hover{text-decoration:underline}
 
   .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-  .card{background:var(--card);border-radius:16px;padding:20px;cursor:pointer;box-shadow:0 3px 12px rgba(15,41,66,.06);transition:.16s;border:2px solid var(--line);position:relative;overflow:hidden}
-  .card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(15,41,66,.12);border-color:var(--brand)}
-  .card .icon{font-size:1.9rem}
+  .card{background:var(--card);border-radius:14px;padding:20px;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.05);transition:.16s;border:1px solid var(--line);position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(16,24,40,.12);border-color:var(--brand)}
+  .card .icon{font-size:1.8rem;margin-bottom:6px;line-height:1}
+  .card .icon svg{width:28px;height:28px;display:block}
   .card h3{margin:8px 0 4px;font-size:1.05rem}
   .card p{font-size:.8rem;color:var(--muted);margin-bottom:12px;min-height:32px}
   .bar{height:8px;background:var(--bg);border-radius:8px;overflow:hidden}
@@ -90,13 +99,13 @@
   .step-body{flex:1;min-width:150px}.step-body h4{margin-bottom:2px;font-size:1rem}.step-body p{font-size:.78rem;color:var(--muted)}
   .step-body .mini-bar{height:6px;background:var(--bg);border-radius:6px;margin-top:6px;overflow:hidden;max-width:180px}
   .step-body .mini-bar>span{display:block;height:100%;width:0;background:var(--green);transition:width .4s}
-  .go-btn{color:#fff;border:none;padding:9px 15px;border-radius:12px;font-weight:800;cursor:pointer;white-space:nowrap;transition:.12s;box-shadow:0 4px 0 rgba(0,0,0,.10)}
-  .go-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.10)}
-  .go-btn.ghost{background:#eef4f9;color:var(--brand);box-shadow:0 4px 0 #dbe6ef}
-  .done-check{color:var(--green);font-weight:800;margin-left:4px}
+  .go-btn{color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.14s;box-shadow:0 1px 2px rgba(16,24,40,.12)}
+  .go-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+  .go-btn.ghost{background:#eef2fb;color:var(--brand);box-shadow:none}
+  .done-check{color:var(--green);font-weight:700;margin-left:4px}
 
-  .lesson-box{background:var(--card);border-radius:16px;padding:24px;box-shadow:0 3px 12px rgba(15,41,66,.06);margin-bottom:16px}
-  .lesson-box h3{margin-bottom:10px;color:var(--brand);font-size:1.5rem}
+  .lesson-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 1px 2px rgba(16,24,40,.05);margin-bottom:16px}
+  .lesson-box h3{margin-bottom:10px;color:var(--text);font-size:1.5rem}
   .lesson-box p{margin-bottom:12px}
   .teach{font-size:1.02rem;line-height:1.7}
   .teach p{margin-bottom:14px}
@@ -130,26 +139,26 @@
   .example .step.show{display:block}
   .hintbtn{background:var(--teal);color:#fff;border:none;padding:8px 16px;border-radius:12px;font-weight:800;cursor:pointer;margin-top:6px}
 
-  .quiz-box{background:var(--card);border-radius:16px;padding:24px;box-shadow:0 3px 12px rgba(15,41,66,.06)}
-  .dots{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap}
-  .dot{width:22px;height:6px;border-radius:4px;background:var(--bg);transition:.2s}
+  .quiz-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+  .dots{display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap}
+  .dot{width:22px;height:5px;border-radius:3px;background:var(--line);transition:.2s}
   .dot.done{background:var(--green)}.dot.current{background:var(--brand)}
-  .q-text{font-size:1.18rem;font-weight:700;margin-bottom:16px}
+  .q-text{font-size:1.18rem;font-weight:600;margin-bottom:16px}
   .q-visual{margin:0 0 16px;text-align:center}
   .options{display:grid;gap:10px}
-  .opt{text-align:left;background:var(--bg);border:2px solid transparent;padding:13px 16px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:.12s}
-  .opt:hover{border-color:var(--brand)}
-  .opt.correct{background:#dcfce7;border-color:var(--green);animation:pop .3s}
-  .opt.wrong{background:#fee2e2;border-color:var(--red)}
-  .feedback{margin-top:14px;font-weight:700;min-height:22px}
+  .opt{text-align:left;background:var(--card);border:1.5px solid var(--line);padding:13px 16px;border-radius:10px;font-size:1rem;font-weight:500;cursor:pointer;transition:.12s}
+  .opt:hover{border-color:var(--brand);background:#f5f8ff}
+  .opt.correct{background:#e7f8ee;border-color:var(--green);animation:pop .3s}
+  .opt.wrong{background:#fdeaea;border-color:var(--red)}
+  .feedback{margin-top:14px;font-weight:600;min-height:22px}
   .feedback.good{color:var(--green)}.feedback.bad{color:var(--red)}
-  .explain{background:var(--bg);border-left:4px solid var(--brand);border-radius:8px;padding:10px 14px;margin-top:8px;font-weight:600;color:var(--text);font-size:.92rem;line-height:1.55}
+  .explain{background:#f5f8ff;border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:8px;padding:11px 15px;margin-top:10px;font-weight:500;color:var(--text);font-size:.92rem;line-height:1.6}
   .explain b{color:var(--brand-d)}
-  .next-btn{margin-top:16px;background:var(--brand);color:#fff;border:none;padding:11px 24px;border-radius:14px;font-weight:800;cursor:pointer;font-size:1rem;box-shadow:0 4px 0 rgba(0,0,0,.12)}
-  .next-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+  .next-btn{margin-top:18px;background:var(--brand);color:#fff;border:none;padding:11px 24px;border-radius:10px;font-weight:600;cursor:pointer;font-size:1rem;box-shadow:0 1px 2px rgba(16,24,40,.12);transition:.14s}
+  .next-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(47,84,235,.25)}
   .next-btn:disabled{opacity:.4;cursor:not-allowed}
   .result{text-align:center;padding:18px}
-  .result .score{font-size:2.8rem;font-weight:800;color:var(--brand);animation:pop .4s}
+  .result .score{font-size:2.8rem;font-weight:700;color:var(--brand);animation:pop .4s}
   .hidden{display:none}
   svg{max-width:100%}
 
@@ -158,7 +167,8 @@
   .practice-hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;font-weight:800}
 
   /* subtle mascot */
-  .mascot{position:fixed;bottom:16px;right:16px;z-index:60;display:flex;align-items:flex-end;gap:8px;pointer-events:none}
+  .mascot{display:none}
+  .mascot.on{position:fixed;bottom:16px;right:16px;z-index:60;display:flex;align-items:flex-end;gap:8px;pointer-events:none}
   .mascot .bubble{background:#fff;border:2px solid var(--brand);border-radius:12px;padding:7px 11px;font-weight:700;font-size:.82rem;max-width:170px;box-shadow:0 4px 14px rgba(15,41,66,.15);opacity:0;transform:translateY(8px);transition:.25s}
   .mascot .bubble.show{opacity:1;transform:none}
   .mascot .duck{width:48px;opacity:.9}
@@ -166,7 +176,7 @@
   .game-card{background:var(--card);border-radius:16px;padding:22px;box-shadow:0 3px 12px rgba(15,41,66,.06)}
   .game-hud{display:flex;justify-content:space-between;font-weight:800;margin-bottom:14px;font-size:1.02rem;flex-wrap:wrap;gap:6px}
   .timer-bar{height:10px;background:var(--bg);border-radius:8px;overflow:hidden;margin-bottom:16px}
-  .timer-bar>span{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width .9s linear}
+  .timer-bar>span{display:block;height:100%;width:100%;background:var(--brand);transition:width .9s linear}
   .nl-track{position:relative;height:70px;background:#fff;border-radius:12px;margin:14px 0;cursor:crosshair;box-shadow:inset 0 0 0 2px var(--line)}
   .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-bottom:22px}
   .dash-tile{background:var(--card);border-radius:16px;padding:16px;text-align:center;box-shadow:0 3px 12px rgba(15,41,66,.06)}
@@ -218,9 +228,11 @@
   .set-btn.on{background:var(--brand);color:#fff;border-color:var(--brand)}
 
   /* balloon pop */
-  .balloon-field{position:relative;height:340px;background:linear-gradient(#eaf6ff,#f7fbff);border-radius:14px;overflow:hidden;margin:10px 0}
-  .balloon{position:absolute;width:66px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;cursor:pointer;font-size:1.1rem;box-shadow:inset -6px -6px 0 rgba(0,0,0,.08);transition:transform .1s}
-  .balloon:active{transform:scale(.9)}
+  .combo-tag{text-align:center;font-weight:800;min-height:22px;margin:4px 0;color:var(--brand-d)}
+  .combo-tag.good{color:var(--green)}.combo-tag.bad{color:var(--red)}
+  .balloon-field{position:relative;height:340px;background:#eef4fb;border-radius:14px;overflow:hidden;margin:10px 0}
+  .balloon{position:absolute;width:62px;height:76px;border-radius:50% 50% 48% 48%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;cursor:pointer;font-size:1.05rem;box-shadow:inset -6px -6px 0 rgba(0,0,0,.08);will-change:bottom}
+  .balloon:active{transform:scale(.88)}
   .balloon::after{content:"";position:absolute;bottom:-8px;left:50%;width:2px;height:10px;background:#bbb}
   .tf-btns{display:flex;gap:14px;justify-content:center;margin-top:16px}
   .tf-btn{flex:1;max-width:180px;border:none;border-radius:16px;padding:22px;font-size:1.4rem;font-weight:800;color:#fff;cursor:pointer}
@@ -231,15 +243,14 @@
 
 <header>
   <nav>
-    <div class="logo" onclick="showHome()">➕ MathQuest <small>GRADES 4–6</small></div>
+    <div class="logo" onclick="showHome()"><svg class="logomark" viewBox="0 0 32 32" fill="none"><rect x="1" y="1" width="30" height="30" rx="9" fill="var(--brand)"/><path d="M16 8.5v15M8.5 16h15" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg><span>MathQuest<small>GRADES 4–6</small></span></div>
     <button class="tab-btn active" data-tab="home" onclick="showHome()">Home</button>
-    <button class="tab-btn" data-tab="practice" onclick="showPage('practice')">✨ Practice</button>
-    <button class="tab-btn" data-tab="arcade" onclick="showPage('arcade')">🎮 Arcade</button>
-    <button class="tab-btn" data-tab="dash" onclick="showPage('dash')">📊 Progress</button>
+    <button class="tab-btn" data-tab="practice" onclick="showPage('practice')">Practice</button>
+    <button class="tab-btn" data-tab="arcade" onclick="showPage('arcade')">Arcade</button>
+    <button class="tab-btn" data-tab="dash" onclick="showPage('dash')">Progress</button>
     <span class="levelwrap"><span class="ring"><svg width="38" height="38"><circle cx="19" cy="19" r="15" fill="none" stroke="#e2e8f0" stroke-width="5"/><circle id="xpring" cx="19" cy="19" r="15" fill="none" stroke="#0ea5e9" stroke-width="5" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="94.2"/></svg><span class="lvl" id="lvl">1</span></span></span>
-    <span class="nav-av" id="nav-av" title="Your avatar" onclick="showPage('dash')">🦆</span>
-    <span class="pill streak-pill">🔥 <span id="streak">0</span></span>
-    <span class="pill xp-pill">⭐ <span id="xp">0</span></span>
+    <span class="pill streak-pill"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="margin-right:2px"><path d="M12 2c1 3-1 4-1 6a3 3 0 0 0 6 0c0-1 0-2-.5-3 2 2 3.5 4.5 3.5 7a7 7 0 1 1-14 0c0-4 3.5-6 6-10z"/></svg><span id="streak">0</span></span>
+    <span class="pill xp-pill"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="margin-right:2px"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg><span id="xp">0</span></span>
     <button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
     <button class="mute-btn" id="setBtn" onclick="openSettings()" title="Settings">⚙️</button>
   </nav>
@@ -254,8 +265,8 @@
   <section id="placement" class="page"></section>
   <section id="practice" class="page"></section>
   <section id="arcade" class="page">
-    <h2 class="section-title">🎮 Arcade</h2>
-    <p class="sub">Quick games to sharpen your skills. Earn XP and chase high scores!</p>
+    <h2 class="section-title">Arcade</h2>
+    <p class="sub">Quick games to sharpen your skills. Earn XP and chase high scores.</p>
     <div id="arcade-menu" class="cards"></div>
     <div id="arcade-game" class="hidden" style="margin-top:16px"></div>
   </section>
