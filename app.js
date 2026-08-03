@@ -565,7 +565,8 @@ function avatarSection(){
 /* ==========================================================================
    NEW MINIGAMES  (generator-fed) + combos
 ========================================================================== */
-function genQ(L){return GEN[pickOne(allUnitIds())](L);}
+function genQ(L){return GEN[pickOne(allUnitIds())](Math.min(L,3));}
+const MSTOPICS=['msChange','msTwoStep','msReverseRect','msReverseTri','msCompare','msFractionOf','msPercent'];
 function startBalloon(){sfx.click();openGame();let time=60,sc=0,combo=0,lvl=1;
   $('arcade-game').innerHTML=`<div class="game-card"><div class="game-hud"><span>🎈 Balloon Pop</span><span>⏱ <span id="bl-t">60</span>s</span><span>Score: <span id="bl-s">0</span></span></div>
     <div class="timer-bar"><span id="bl-bar"></span></div>
@@ -689,7 +690,38 @@ const GEN={
  g6u5(L){const n=[3,4,5][L-1]||4;const arr=[];for(let i=0;i<n;i++)arr.push(rint(1,12));const sum=arr.reduce((a,b)=>a+b,0);
    if(Math.random()<.5&&sum%n===0){const ctx=pickOne(['test scores','ages','points scored','temperatures']);
      return Object.assign({q:`Find the mean of these ${ctx}: ${arr.join(', ')}`,why:`Sum ${sum} ÷ ${n} = ${sum/n}.`},mc(sum/n,[sum,Math.max(...arr),Math.round(sum/n)+1]));}
-   const rng=Math.max(...arr)-Math.min(...arr);return Object.assign({q:`Range of ${arr.join(', ')}?`,why:`Biggest ${Math.max(...arr)} − smallest ${Math.min(...arr)} = ${rng}.`},mc(rng,[Math.max(...arr),Math.min(...arr),rng+1]));}
+   const rng=Math.max(...arr)-Math.min(...arr);return Object.assign({q:`Range of ${arr.join(', ')}?`,why:`Biggest ${Math.max(...arr)} − smallest ${Math.min(...arr)} = ${rng}.`},mc(rng,[Math.max(...arr),Math.min(...arr),rng+1]));},
+
+ /* ---------- multi-step / word-problem "challenge" generators ---------- */
+ msChange(L){const cents=rint(20,90),price=cents/100,qty=rint(2,[3,4,5,6][L-1]||5),tot=price*qty;
+   const bill=[5,10,20].find(b=>b>=tot)||Math.ceil(tot),change=bill-tot,it=pickOne(['pencils','stickers','apples','markers']);
+   return Object.assign({q:`${it[0].toUpperCase()+it.slice(1)} cost $${price.toFixed(2)} each. You buy ${qty} and pay with a $${bill} bill. How much change do you get?`,
+     why:`Step 1 — the cost: ${qty} × $${price.toFixed(2)} = $${tot.toFixed(2)}. Step 2 — the change: $${bill} − $${tot.toFixed(2)} = $${change.toFixed(2)}.`},
+     mc('$'+change.toFixed(2),['$'+tot.toFixed(2),'$'+bill.toFixed(2),'$'+(tot+price).toFixed(2),'$'+(change+1).toFixed(2)]));},
+ msTwoStep(L){const b=rint(3,[6,8,10,12][L-1]||8),c=rint(4,9),made=b*c,sold=rint(2,made-1),left=made-sold;
+   return Object.assign({q:`A baker makes ${b} trays of ${c} muffins each, then sells ${sold}. How many muffins are left?`,
+     why:`Step 1 — muffins made: ${b} × ${c} = ${made}. Step 2 — subtract what sold: ${made} − ${sold} = ${left}.`},
+     mc(left,[made,made+sold,b+c+sold,sold]));},
+ msReverseRect(L){const w=rint(2,9),len=rint(2,[8,10,12,15][L-1]||10),area=w*len;
+   return Object.assign({q:`A rectangle has an area of ${area} and a width of ${w}. What is its length?`,
+     why:`Area = length × width, so length = area ÷ width = ${area} ÷ ${w} = ${len}.`},
+     mc(len,[area-w,w,len+1,(len>1?len-1:len+2)]));},
+ msReverseTri(L){const h=2*rint(1,[4,5,6,7][L-1]||5),base=rint(2,12),area=base*h/2;
+   return Object.assign({q:`A triangle has an area of ${area} and a base of ${base}. What is its height?`,
+     why:`Area = ½ × base × height, so height = 2 × area ÷ base = 2 × ${area} ÷ ${base} = ${h}.`},
+     mc(h,[area,h/2,h+1,base]));},
+ msCompare(L){let ua,ub;do{ua=rint(2,5);ub=rint(2,5);}while(ua===ub);const qa=rint(2,6),qb=rint(2,6),pa=ua*qa,pb=ub*qb,it=pickOne(['pens','apples','erasers','cookies']);
+   return {q:`Which is the better deal on ${it}: ${qa} for $${pa}, or ${qb} for $${pb}?`,
+     o:[`${qa} for $${pa}`,`${qb} for $${pb}`,'They cost the same','Not enough info'],a:(ua<ub?0:1),
+     why:`Find the price for ONE: $${pa} ÷ ${qa} = $${ua} each, and $${pb} ÷ ${qb} = $${ub} each. $${Math.min(ua,ub)} each is the better deal.`};},
+ msFractionOf(L){const den=rint(2,5),num=rint(1,den-1),k=rint(2,[5,7,9,12][L-1]||7),N=den*k,ans=N*num/den,it=pickOne(['students','marbles','cookies','stickers']);
+   return Object.assign({q:`There are ${N} ${it}, and ${num}/${den} of them are red. How many are red?`,
+     why:`${num}/${den} of ${N}: first ${N} ÷ ${den} = ${N/den}, then × ${num} = ${ans}.`},
+     mc(ans,[N-ans,N,ans+den,N/den,ans+1]));},
+ msPercent(L){const price=pickOne([20,40,60,80,100]),pct=pickOne([10,25,50,20]),off=price*pct/100,sale=price-off;
+   return Object.assign({q:`A $${price} jacket is ${pct}% off. What is the sale price?`,
+     why:`Discount = ${pct}% of $${price} = $${off}. Sale price = $${price} − $${off} = $${sale}.`},
+     mc('$'+sale,['$'+off,'$'+price,'$'+(price+off),'$'+(sale-off)]));}
 };
 
 /* ==========================================================================
@@ -703,7 +735,9 @@ function renderPractice(){
       <button class="go-btn" style="background:${G.accent};margin-top:10px" onclick="practiceRun([${G.units.map(u=>"'"+u.id+"'").join(',')}],'${G.name} — Mixed')">🎲 Mixed ${G.name}</button></div>`;}).join('');
   $('practice').innerHTML=`<h2 class="section-title">✨ Practice (auto-generated)</h2>
     <p class="sub">Unlimited fresh questions that adapt to how you're doing — pick a topic or go mixed. Every answer comes with an explanation.</p>
-    <div style="text-align:center;margin-bottom:16px"><button class="big-btn" style="background:var(--brand);color:#fff" onclick="practiceRun([${allUnitIds().map(id=>"'"+id+"'").join(',')}],'All Grades — Mixed')">🚀 Mixed practice (all grades)</button></div>
+    <div style="text-align:center;margin-bottom:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="big-btn" style="background:var(--brand);color:#fff" onclick="practiceRun([${allUnitIds().map(id=>"'"+id+"'").join(',')}],'All Grades — Mixed')">🚀 Mixed practice (all grades)</button>
+      <button class="big-btn" style="background:var(--coral);color:#fff" onclick="practiceRun([${MSTOPICS.map(t=>"'"+t+"'").join(',')}],'🧠 Challenge — multi-step')">🧠 Challenge (multi-step)</button></div>
     ${grades}`;
 }
 function allUnitIds(){const a=[];gorder.forEach(g=>GRADES[g].units.forEach(u=>a.push(u.id)));return a;}
@@ -711,7 +745,7 @@ let PR=null;
 function practiceRun(topics,label){sfx.click();PR={topics,label,level:1,streak:0,answered:0,correct:0,answered_now:false};
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('practice').classList.add('active');setTab('practice');window.scrollTo(0,0);
   nextPractice();}
-function nextPractice(){const topic=pickOne(PR.topics);const item=GEN[topic]?GEN[topic](PR.level):null;
+function nextPractice(){const topic=pickOne(PR.topics);const isMs=topic.indexOf('ms')===0;const lv=isMs?PR.level:Math.min(PR.level,3);const item=GEN[topic]?GEN[topic](lv):null;
   if(!item){$('practice').innerHTML='<p>No generator for this topic.</p>';return;}
   PR.cur=item;PR.answered_now=false;
   const acc=PR.answered?Math.round(PR.correct/PR.answered*100):0;
@@ -730,7 +764,7 @@ function prPick(k){if(PR.answered_now)return;PR.answered_now=true;const item=PR.
   const fb=$('pr-fb');
   if(k===item.a){PR.correct++;stats.correct++;PR.streak++;addXP(5);sfx.correct();
     fb.innerHTML='<span class="feedback good">✅ Correct!</span>'+(explainHTML(item)?'<div class="explain">'+explainHTML(item)+'</div>':'');fb.className='';
-    if(PR.streak>=3&&PR.level<3){PR.level++;PR.streak=0;setTimeout(()=>duckSay('Level up — harder questions! 💪'),200);}}
+    if(PR.streak>=3&&PR.level<4){PR.level++;PR.streak=0;setTimeout(()=>duckSay('Level up — harder questions! 💪'),200);}}
   else{PR.streak=0;if(PR.level>1)PR.level--;sfx.wrong();fb.innerHTML='<span class="feedback bad">❌ Not quite — the answer is <b>'+item.o[item.a]+'</b>.</span>'+(explainHTML(item)?'<div class="explain"><b>How to solve it:</b> '+explainHTML(item)+'</div>':'');fb.className='';}
   save();$('pr-next').disabled=false;
 }
