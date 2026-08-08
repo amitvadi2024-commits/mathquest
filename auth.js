@@ -83,15 +83,15 @@ if(typeof window.save==='function'){
 function openAccount(){
   if(typeof sfx!=='undefined') sfx.click();
   if(!sb){
-    $('modal-box').innerHTML=`<div class="big">👤</div><h3>Accounts not set up yet</h3>
+    $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">Accounts not set up yet</h3>
       <p style="font-size:.9rem;color:var(--muted);line-height:1.5">This site is running in <b>guest mode</b> — progress is saved on this device only. To turn on sign-in and sync across devices, add your Supabase keys in <b>supabase-config.js</b> (steps in SETUP-ACCOUNTS.md).</p>
       <button id="modal-ok" onclick="closeModal()">Got it</button>`;
     $('modal').style.display='flex'; return;
   }
   if(currentUser){
-    $('modal-box').innerHTML=`<div class="big">👤</div><h3>Signed in</h3>
-      <p style="font-size:.92rem;font-weight:700">${currentUser.email||'Your account'}</p>
-      <p style="font-size:.82rem;color:var(--muted);line-height:1.5">Your XP, streak, badges, and progress sync to your account automatically and follow you to any device.</p>
+    $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">You're signed in</h3>
+      <p style="font-size:.95rem;font-weight:700;margin:2px 0">${currentUser.email||'Your account'}</p>
+      <p style="font-size:.82rem;color:var(--muted);line-height:1.5">Your XP, streak, badges, and progress sync automatically and follow you to any device.</p>
       <button class="set-btn" onclick="doLogout()">Sign out</button>
       <button id="modal-ok" onclick="closeModal()">Done</button>`;
     $('modal').style.display='flex'; return;
@@ -99,41 +99,41 @@ function openAccount(){
   authForm();
 }
 let _authEmail='';
-const _ist='width:100%;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:10px;font-size:1rem;box-sizing:border-box';
+const _ist='width:100%;padding:11px 12px;margin:6px 0;border:1.5px solid var(--line);border-radius:12px;font-size:1rem;box-sizing:border-box';
+const _x='<button onclick="closeModal()" aria-label="Close" style="position:absolute;top:12px;right:14px;width:30px;height:30px;padding:0;margin:0;border-radius:50%;background:#eef2f7;color:#64748b;border:none;font-size:15px;font-weight:700;line-height:1;cursor:pointer;display:grid;place-items:center">✕</button>';
+const _sub=t=>`<p style="font-size:.86rem;color:var(--muted);line-height:1.5;margin:2px 0 12px">${t}</p>`;
 function _msg(msg,good){return `<div id="acc-msg" style="font-size:.82rem;color:${good?'var(--teal)':'var(--coral)'};min-height:18px;margin:4px 0;line-height:1.4">${msg||''}</div>`;}
 function authForm(mode,msg,good){
   mode=mode||'login';
   if(mode==='signup'){
-    $('modal-box').innerHTML=`<div class="big">👤</div><h3>Create account</h3>
+    $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">Create your account</h3>${_sub('Free — your XP, streak and progress sync to every device.')}
       <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}">
       <input id="acc-pass" type="password" placeholder="Password (6+ characters)" autocomplete="new-password" style="${_ist}" onkeydown="if(event.key==='Enter')doSignup()">
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doSignup()">Create account</button>
-      <button class="back-link" style="margin-top:10px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">Already have an account? <b>Log in</b></button>
-      <button class="back-link" style="margin-top:2px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="closeModal()">Cancel</button>`;
+      <button class="back-link" style="margin-top:12px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">Already have an account? <b>Log in</b></button>`;
   }else if(mode==='reset'){
-    $('modal-box').innerHTML=`<div class="big">🔑</div><h3>Reset password</h3>
-      <p style="font-size:.84rem;color:var(--muted);line-height:1.5">Enter your email and we'll send a code to reset your password.</p>
+    $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">Reset password</h3>${_sub("Enter your email and we'll send you a reset code.")}
       <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}" onkeydown="if(event.key==='Enter')doReset()">
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doReset()">Send reset code</button>
-      <button class="back-link" style="margin-top:10px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">← Back to log in</button>`;
+      <button class="back-link" style="margin-top:12px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">← Back to log in</button>`;
   }else{
-    $('modal-box').innerHTML=`<div class="big">👤</div><h3>Log in</h3>
+    $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">Welcome back</h3>${_sub('Log in to pick up right where you left off.')}
       <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}">
       <input id="acc-pass" type="password" placeholder="Password" autocomplete="current-password" style="${_ist}" onkeydown="if(event.key==='Enter')doLogin()">
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doLogin()">Log in</button>
-      <button class="back-link" style="margin-top:10px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('reset')">Forgot your password?</button>
-      <button class="back-link" style="margin-top:2px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('signup')">New here? <b>Create an account</b></button>`;
+      <button class="back-link" style="margin-top:12px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('reset')">Forgot your password?</button>
+      <button class="back-link" style="margin-top:4px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('signup')">New here? <b>Create an account</b></button>`;
   }
   $('modal').style.display='flex';
   setTimeout(()=>{ const e=$('acc-email'); if(e){e.value=_authEmail; e.focus();} },50);
 }
 function codeForm(purpose,msg,good){
   const recovery=purpose==='recovery';
-  $('modal-box').innerHTML=`<div class="big">✉️</div><h3>${recovery?'Reset your password':'Enter your code'}</h3>
-    <p style="font-size:.84rem;color:var(--muted);line-height:1.5">We emailed a code to <b>${_authEmail}</b>. Enter it${recovery?' and pick a new password':' to verify your account'}. (Check spam if it's not there.)</p>
+  $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">${recovery?'Reset your password':'Check your email'}</h3>
+    ${_sub(`We emailed a code to <b>${_authEmail}</b>. Enter it${recovery?' and pick a new password':' to verify your account'}. Check spam if you don't see it.`)}
     <input id="acc-code" inputmode="numeric" maxlength="8" placeholder="Code" style="${_ist};letter-spacing:5px;text-align:center;font-size:1.3rem" onkeydown="if(event.key==='Enter')${recovery?'doResetVerify':'verifyCode'}()">
     ${recovery?`<input id="acc-newpass" type="password" placeholder="New password (6+ characters)" autocomplete="new-password" style="${_ist}" onkeydown="if(event.key==='Enter')doResetVerify()">`:''}
     ${_msg(msg,good)}

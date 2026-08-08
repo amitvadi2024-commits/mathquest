@@ -192,7 +192,7 @@
 
   #confetti{position:fixed;inset:0;pointer-events:none;z-index:90}
   .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:95;background:rgba(15,41,66,.5);padding:16px}
-  .modal .box{background:#fff;border-radius:20px;padding:30px 34px;text-align:center;animation:pop .5s;max-width:460px}
+  .modal .box{background:#fff;border-radius:20px;padding:30px 34px;text-align:center;animation:pop .5s;max-width:460px;position:relative}
   .modal .box .big{font-size:3rem}
   .modal .box h3{font-size:1.5rem;color:var(--brand);margin:6px 0}
   .modal .box button{margin-top:14px;background:var(--brand);color:#fff;border:none;padding:11px 26px;border-radius:14px;font-weight:800;cursor:pointer}
@@ -301,7 +301,6 @@
       <p>MathQuest turns each grade into a learning path you actually want to climb — short guided lessons, ideas <em>drawn out</em> with hands-on visuals, practice that adapts to you, and arcade games that make it stick.</p>
       <div class="lp-cta">
         <button class="lp-primary" onclick="landingSignup()">Create a free account</button>
-        <button class="lp-secondary" onclick="enterApp()">Explore as guest →</button>
       </div>
       <p class="lp-login">Already have an account? <a onclick="landingLogin()">Log in here</a></p>
     </div>
