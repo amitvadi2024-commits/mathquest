@@ -109,23 +109,23 @@ function authForm(mode,msg,good){
       <input id="acc-pass" type="password" placeholder="Password (6+ characters)" autocomplete="new-password" style="${_ist}" onkeydown="if(event.key==='Enter')doSignup()">
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doSignup()">Create account</button>
-      <button class="back-link" style="margin-top:10px;background:none;border:none" onclick="authForm('login')">Already have an account? <b>Log in</b></button>
-      <button class="back-link" style="margin-top:2px;background:none;border:none" onclick="closeModal()">Cancel</button>`;
+      <button class="back-link" style="margin-top:10px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">Already have an account? <b>Log in</b></button>
+      <button class="back-link" style="margin-top:2px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="closeModal()">Cancel</button>`;
   }else if(mode==='reset'){
     $('modal-box').innerHTML=`<div class="big">🔑</div><h3>Reset password</h3>
       <p style="font-size:.84rem;color:var(--muted);line-height:1.5">Enter your email and we'll send a code to reset your password.</p>
       <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}" onkeydown="if(event.key==='Enter')doReset()">
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doReset()">Send reset code</button>
-      <button class="back-link" style="margin-top:10px;background:none;border:none" onclick="authForm('login')">← Back to log in</button>`;
+      <button class="back-link" style="margin-top:10px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">← Back to log in</button>`;
   }else{
     $('modal-box').innerHTML=`<div class="big">👤</div><h3>Log in</h3>
       <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}">
       <input id="acc-pass" type="password" placeholder="Password" autocomplete="current-password" style="${_ist}" onkeydown="if(event.key==='Enter')doLogin()">
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doLogin()">Log in</button>
-      <button class="back-link" style="margin-top:10px;background:none;border:none" onclick="authForm('reset')">Forgot your password?</button>
-      <button class="back-link" style="margin-top:2px;background:none;border:none" onclick="authForm('signup')">New here? <b>Create an account</b></button>`;
+      <button class="back-link" style="margin-top:10px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('reset')">Forgot your password?</button>
+      <button class="back-link" style="margin-top:2px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('signup')">New here? <b>Create an account</b></button>`;
   }
   $('modal').style.display='flex';
   setTimeout(()=>{ const e=$('acc-email'); if(e){e.value=_authEmail; e.focus();} },50);
@@ -138,8 +138,8 @@ function codeForm(purpose,msg,good){
     ${recovery?`<input id="acc-newpass" type="password" placeholder="New password (6+ characters)" autocomplete="new-password" style="${_ist}" onkeydown="if(event.key==='Enter')doResetVerify()">`:''}
     ${_msg(msg,good)}
     <button id="modal-ok" onclick="${recovery?'doResetVerify':'verifyCode'}()">${recovery?'Set new password':'Verify & sign in'}</button>
-    <button class="back-link" style="margin-top:8px;background:none;border:none" onclick="${recovery?'doReset(true)':'resendCode()'}">Resend code</button>
-    <button class="back-link" style="margin-top:2px;background:none;border:none" onclick="authForm('login')">← Back</button>`;
+    <button class="back-link" style="margin-top:8px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="${recovery?'doReset(true)':'resendCode()'}">Resend code</button>
+    <button class="back-link" style="margin-top:2px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">← Back</button>`;
   $('modal').style.display='flex';
   setTimeout(()=>{ const e=$('acc-code'); if(e) e.focus(); },50);
 }
