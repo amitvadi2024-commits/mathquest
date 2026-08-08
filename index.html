@@ -237,9 +237,84 @@
   .tf-btns{display:flex;gap:14px;justify-content:center;margin-top:16px}
   .tf-btn{flex:1;max-width:180px;border:none;border-radius:16px;padding:22px;font-size:1.4rem;font-weight:800;color:#fff;cursor:pointer}
   .tf-true{background:var(--green)}.tf-false{background:var(--red)}
+
+  /* ---------------- Landing / welcome page ---------------- */
+  #landing{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;overflow-y:auto;
+    background:radial-gradient(1100px 560px at 82% -12%, #dbeafe 0%, rgba(219,234,254,0) 60%),
+               radial-gradient(880px 520px at -12% 112%, #d3f5ec 0%, rgba(211,245,236,0) 58%), #f6fafd;
+    font-family:inherit}
+  .lp-nav{display:flex;justify-content:space-between;align-items:center;padding:22px min(6vw,54px)}
+  .lp-logo{display:flex;align-items:center;gap:11px;font-weight:900;font-size:1.35rem;color:#0f2942;letter-spacing:-.02em}
+  .lp-logo .mk{width:36px;height:36px;border-radius:11px;background:var(--brand);display:grid;place-items:center;box-shadow:0 6px 16px -6px rgba(14,165,233,.7)}
+  .lp-navbtns button{margin-left:9px;border-radius:12px;padding:9px 19px;font-weight:800;cursor:pointer;font-size:.94rem;transition:transform .12s}
+  .lp-navbtns button:active{transform:scale(.95)}
+  .lp-ghost{background:transparent;color:#0f2942;border:1.6px solid #cbd8e6}
+  .lp-fill{background:var(--brand);color:#fff;border:1.6px solid var(--brand)}
+  .lp-hero{flex:1 0 auto;display:grid;grid-template-columns:1.08fr .92fr;gap:44px;align-items:center;
+    width:100%;max-width:1180px;margin:0 auto;padding:26px min(6vw,54px) 46px;box-sizing:border-box}
+  .lp-badge{display:inline-block;background:#e0f2fe;color:#0369a1;font-weight:800;font-size:.78rem;padding:6px 13px;border-radius:999px;letter-spacing:.01em}
+  .lp-hero h1{font-size:clamp(2.4rem,5.2vw,3.7rem);line-height:1.04;margin:18px 0 14px;color:#0f2942;letter-spacing:-.025em;font-weight:900}
+  .lp-hero h1 .hl{color:var(--brand);background:linear-gradient(180deg,transparent 62%,#bae6fd 62%);padding:0 .06em}
+  .lp-hero-text>p{font-size:1.09rem;color:#48607a;line-height:1.62;max-width:520px}
+  .lp-hero-text>p em{color:#0f2942;font-style:normal;font-weight:700}
+  .lp-cta{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 12px}
+  .lp-primary{background:var(--brand);color:#fff;border:none;border-radius:14px;padding:15px 28px;font-weight:800;font-size:1.03rem;cursor:pointer;box-shadow:0 14px 30px -10px rgba(14,165,233,.65);transition:transform .12s,box-shadow .12s}
+  .lp-primary:hover{transform:translateY(-2px);box-shadow:0 18px 34px -10px rgba(14,165,233,.7)}
+  .lp-secondary{background:#fff;color:#0f2942;border:1.6px solid #cbd8e6;border-radius:14px;padding:15px 24px;font-weight:800;font-size:1.02rem;cursor:pointer}
+  .lp-secondary:hover{border-color:var(--brand);color:var(--brand)}
+  .lp-login{font-size:.93rem;color:#64768c;margin-top:8px}
+  .lp-login a{color:var(--brand);font-weight:800;cursor:pointer;text-decoration:underline}
+  .lp-art{display:grid;grid-template-columns:1fr 1fr;gap:16px;place-items:center}
+  .lp-card{background:#fff;border:1px solid #e6eef6;border-radius:18px;padding:15px 15px 12px;width:100%;box-sizing:border-box;
+    box-shadow:0 24px 46px -26px rgba(15,41,66,.5);display:flex;flex-direction:column;align-items:center;gap:9px;transform:rotate(var(--r,0deg));transition:transform .18s}
+  .lp-card:hover{transform:rotate(0deg) translateY(-3px)}
+  .lp-card .lp-cap{font-size:.74rem;font-weight:800;color:#7089a1;text-transform:uppercase;letter-spacing:.05em;align-self:flex-start}
+  .lp-card svg{max-width:100%;height:auto}
+  .lp-features{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:100%;max-width:1180px;margin:0 auto;padding:6px min(6vw,54px) 30px;box-sizing:border-box}
+  .lp-feat{background:rgba(255,255,255,.72);backdrop-filter:blur(6px);border:1px solid #e7eff7;border-radius:16px;padding:18px 18px 16px}
+  .lp-feat .ic{font-size:1.7rem;line-height:1}
+  .lp-feat h4{margin:9px 0 5px;font-size:1.02rem;color:#0f2942}
+  .lp-feat p{font-size:.87rem;color:#5c7189;line-height:1.5;margin:0}
+  .lp-foot{text-align:center;color:#7a8ea3;font-size:.85rem;padding:6px 6vw 30px}
+  @media(max-width:860px){
+    .lp-hero{grid-template-columns:1fr;gap:30px;padding-top:12px}
+    .lp-art{max-width:440px}
+    .lp-features{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:520px){ .lp-features{grid-template-columns:1fr} .lp-navbtns .lp-ghost{display:none} }
 </style>
 </head>
 <body>
+
+<section id="landing">
+  <div class="lp-nav">
+    <div class="lp-logo"><span class="mk"><svg width="20" height="20" viewBox="0 0 32 32" fill="none"><path d="M16 8.5v15M8.5 16h15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></span>MathQuest</div>
+    <div class="lp-navbtns">
+      <button class="lp-ghost" onclick="landingLogin()">Log in</button>
+      <button class="lp-fill" onclick="landingSignup()">Sign up</button>
+    </div>
+  </div>
+  <div class="lp-hero">
+    <div class="lp-hero-text">
+      <span class="lp-badge">Grades 4–6 · aligned to Common Core</span>
+      <h1>Math that finally <span class="hl">clicks</span>.</h1>
+      <p>MathQuest turns each grade into a learning path you actually want to climb — short guided lessons, ideas <em>drawn out</em> with hands-on visuals, practice that adapts to you, and arcade games that make it stick.</p>
+      <div class="lp-cta">
+        <button class="lp-primary" onclick="landingSignup()">Create a free account</button>
+        <button class="lp-secondary" onclick="enterApp()">Explore as guest →</button>
+      </div>
+      <p class="lp-login">Already have an account? <a onclick="landingLogin()">Log in here</a></p>
+    </div>
+    <div class="lp-art" id="lp-art"></div>
+  </div>
+  <div class="lp-features">
+    <div class="lp-feat"><div class="ic">📚</div><h4>Guided lessons</h4><p>Bite-size, step-by-step lessons that build one idea at a time — never a wall of text.</p></div>
+    <div class="lp-feat"><div class="ic">✏️</div><h4>See every idea</h4><p>Area models, fraction bars, number lines and shapes drawn right on the question — not just described.</p></div>
+    <div class="lp-feat"><div class="ic">♾️</div><h4>Endless practice</h4><p>Fresh questions that adjust to your level, with instant explanations when you slip.</p></div>
+    <div class="lp-feat"><div class="ic">🎮</div><h4>Games &amp; rewards</h4><p>Arcade mini-games, XP, streaks and badges that turn practice into a quest.</p></div>
+  </div>
+  <div class="lp-foot">Made for curious kids in grades 4–6 · Pick a grade, take a quick placement check, and start climbing.</div>
+</section>
 
 <header>
   <nav>

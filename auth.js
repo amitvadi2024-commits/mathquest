@@ -26,7 +26,7 @@ async function authBoot(){
   if(!sb) return;                       // guest mode — nothing else to do
   try{
     const { data:{ session } } = await sb.auth.getSession();
-    if(session && session.user){ currentUser=session.user; await cloudPull(); }
+    if(session && session.user){ currentUser=session.user; await cloudPull(); enterApp(); }
     sb.auth.onAuthStateChange((event,s)=>{
       const u=(s&&s.user)||null, was=currentUser;
       currentUser=u; updateAcctBtn();
@@ -150,7 +150,7 @@ async function doSignup(){
   try{
     const { data, error } = await sb.auth.signUp({ email, password:pass });
     if(error) throw error;
-    if(data.session && data.user){ currentUser=data.user; updateAcctBtn(); await cloudPull(); closeModal(); }
+    if(data.session && data.user){ currentUser=data.user; updateAcctBtn(); await cloudPull(); closeModal(); enterApp(); }
     else codeForm('signup','We sent you a code.',true);
   }catch(e){ authForm('signup', e.message||'Could not sign up.'); }
 }
@@ -161,7 +161,7 @@ async function doLogin(){
   try{
     const { data, error } = await sb.auth.signInWithPassword({ email, password:pass });
     if(error) throw error;
-    currentUser=data.user; updateAcctBtn(); await cloudPull(); closeModal();
+    currentUser=data.user; updateAcctBtn(); await cloudPull(); closeModal(); enterApp();
   }catch(e){
     if(/confirm/i.test(e.message||'')) codeForm('signup','Confirm your email first — enter the code we emailed you.');
     else authForm('login', e.message||'Could not log in.');
@@ -175,7 +175,7 @@ async function verifyCode(){
     let res=await sb.auth.verifyOtp({ email:_authEmail, token, type:'signup' });
     if(res.error){ const r2=await sb.auth.verifyOtp({ email:_authEmail, token, type:'email' }); if(!r2.error) res=r2; }
     if(res.error) throw res.error;
-    currentUser=res.data.user; updateAcctBtn(); await cloudPull(); closeModal();
+    currentUser=res.data.user; updateAcctBtn(); await cloudPull(); closeModal(); enterApp();
   }catch(e){ codeForm('signup', e.message||'That code was wrong or expired. Try again.'); }
 }
 async function resendCode(){
@@ -203,7 +203,7 @@ async function doResetVerify(){
     if(error) throw error;
     const { error:e2 } = await sb.auth.updateUser({ password:np });
     if(e2) throw e2;
-    const u=await sb.auth.getUser(); currentUser=u.data.user; updateAcctBtn(); await cloudPull(); closeModal();
+    const u=await sb.auth.getUser(); currentUser=u.data.user; updateAcctBtn(); await cloudPull(); closeModal(); enterApp();
   }catch(e){ codeForm('recovery', e.message||'That code was wrong or expired. Try again.'); }
 }
 async function doLogout(){
@@ -211,6 +211,28 @@ async function doLogout(){
   currentUser=null; updateAcctBtn(); closeModal();
 }
 
+/* ---------------- landing / welcome gate ---------------- */
+function landingLogin(){ if(!sb) return openAccount(); authForm('login'); }
+function landingSignup(){ if(!sb) return openAccount(); authForm('signup'); }
+function enterApp(){ const l=document.getElementById('landing'); if(l) l.style.display='none'; try{localStorage.setItem('mq_entered','1');}catch(e){} }
+function fillLandingArt(){
+  const a=document.getElementById('lp-art'); if(!a || typeof qVisual!=='function') return;
+  const cards=[
+    ['Fractions',{type:'fcircle',n:3,d:4},'-3deg'],
+    ['Area model',{type:'area',a:24,b:13},'2.5deg'],
+    ['Angles',{type:'angle',deg:130},'2deg'],
+    ['Shapes',{type:'quad',kind:'trapezoid'},'-2.5deg']
+  ];
+  a.innerHTML=cards.map(([cap,v,r])=>`<div class="lp-card" style="--r:${r}"><div class="lp-cap">${cap}</div>${qVisual(v)}</div>`).join('');
+}
+function initLanding(){
+  const l=document.getElementById('landing'); if(!l) return;
+  let entered=false; try{ entered=localStorage.getItem('mq_entered')==='1'; }catch(e){}
+  if(entered){ l.style.display='none'; }
+  else { l.style.display='flex'; fillLandingArt(); }
+}
+
 /* boot */
-if(document.readyState!=='loading') authBoot();
-else document.addEventListener('DOMContentLoaded', authBoot);
+function _boot(){ authBoot(); initLanding(); }
+if(document.readyState!=='loading') _boot();
+else document.addEventListener('DOMContentLoaded', _boot);
