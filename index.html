@@ -253,6 +253,7 @@
     <span class="pill xp-pill"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="margin-right:2px"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg><span id="xp">0</span></span>
     <button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
     <button class="mute-btn" id="setBtn" onclick="openSettings()" title="Settings">⚙️</button>
+    <button class="mute-btn" id="acctBtn" onclick="openAccount()" title="Sign in / create account">👤</button>
   </nav>
 </header>
 
@@ -279,7 +280,10 @@
 <canvas id="confetti"></canvas>
 <div class="modal" id="modal"><div class="box" id="modal-box"></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script src="content.js"></script>
 <script src="app.js"></script>
+<script src="auth.js"></script>
 </body>
 </html>
