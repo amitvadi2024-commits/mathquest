@@ -104,13 +104,15 @@ let _authEmail='';
 const _ist='width:100%;padding:11px 12px;margin:6px 0;border:1.5px solid var(--line);border-radius:12px;font-size:1rem;box-sizing:border-box';
 const _x='<button onclick="closeModal()" aria-label="Close" style="position:absolute;top:12px;right:14px;width:30px;height:30px;padding:0;margin:0;border-radius:50%;background:#eef2f7;color:#64748b;border:none;font-size:15px;font-weight:700;line-height:1;cursor:pointer;display:grid;place-items:center">✕</button>';
 const _sub=t=>`<p style="font-size:.86rem;color:var(--muted);line-height:1.5;margin:2px 0 12px">${t}</p>`;
+function _pw(id,ph,ac,onkey){ return `<div style="position:relative;margin:6px 0"><input id="${id}" type="password" placeholder="${ph}" autocomplete="${ac}" style="width:100%;padding:11px 64px 11px 12px;border:1.5px solid var(--line);border-radius:12px;font-size:1rem;box-sizing:border-box"${onkey?` onkeydown="if(event.key==='Enter')${onkey}()"`:''}><button type="button" tabindex="-1" onclick="pwToggle('${id}',this)" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);background:none;border:none;color:var(--brand);font-weight:700;font-size:.8rem;cursor:pointer;padding:4px 7px;margin:0;text-decoration:underline">Show</button></div>`; }
+function pwToggle(id,btn){ const i=document.getElementById(id); if(!i) return; const show=i.type==='password'; i.type=show?'text':'password'; if(btn) btn.textContent=show?'Hide':'Show'; }
 function _msg(msg,good){return `<div id="acc-msg" style="font-size:.82rem;color:${good?'var(--teal)':'var(--coral)'};min-height:18px;margin:4px 0;line-height:1.4">${msg||''}</div>`;}
 function authForm(mode,msg,good){
   mode=mode||'login';
   if(mode==='signup'){
     $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">Create your account</h3>${_sub('Free — your XP, streak and progress sync to every device.')}
       <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}">
-      <input id="acc-pass" type="password" placeholder="Password (6+ characters)" autocomplete="new-password" style="${_ist}" onkeydown="if(event.key==='Enter')doSignup()">
+      ${_pw('acc-pass','Password (6+ characters)','new-password','doSignup')}
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doSignup()">Create account</button>
       <button class="back-link" style="margin-top:12px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('login')">Already have an account? <b>Log in</b></button>`;
@@ -123,7 +125,7 @@ function authForm(mode,msg,good){
   }else{
     $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">Welcome back</h3>${_sub('Log in to pick up right where you left off.')}
       <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}">
-      <input id="acc-pass" type="password" placeholder="Password" autocomplete="current-password" style="${_ist}" onkeydown="if(event.key==='Enter')doLogin()">
+      ${_pw('acc-pass','Password','current-password','doLogin')}
       ${_msg(msg,good)}
       <button id="modal-ok" onclick="doLogin()">Log in</button>
       <button class="back-link" style="margin-top:12px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="authForm('reset')">Forgot your password?</button>
@@ -137,7 +139,7 @@ function codeForm(purpose,msg,good){
   $('modal-box').innerHTML=`${_x}<h3 style="margin-top:2px">${recovery?'Reset your password':'Check your email'}</h3>
     ${_sub(`We emailed a code to <b>${_authEmail}</b>. Enter it${recovery?' and pick a new password':' to verify your account'}. Check spam if you don't see it.`)}
     <input id="acc-code" inputmode="numeric" maxlength="8" placeholder="Code" style="${_ist};letter-spacing:5px;text-align:center;font-size:1.3rem" onkeydown="if(event.key==='Enter')${recovery?'doResetVerify':'verifyCode'}()">
-    ${recovery?`<input id="acc-newpass" type="password" placeholder="New password (6+ characters)" autocomplete="new-password" style="${_ist}" onkeydown="if(event.key==='Enter')doResetVerify()">`:''}
+    ${recovery?_pw('acc-newpass','New password (6+ characters)','new-password','doResetVerify'):''}
     ${_msg(msg,good)}
     <button id="modal-ok" onclick="${recovery?'doResetVerify':'verifyCode'}()">${recovery?'Set new password':'Verify & sign in'}</button>
     <button class="back-link" style="margin-top:8px;background:none;border:none;color:var(--brand);text-decoration:underline" onclick="${recovery?'doReset(true)':'resendCode()'}">Resend code</button>
@@ -151,7 +153,14 @@ async function doSignup(){
   _authEmail=email; const m=$('acc-msg'); if(m) m.textContent='Creating account…';
   try{
     const { data, error } = await sb.auth.signUp({ email, password:pass });
-    if(error) throw error;
+    if(error){
+      if(/already|registered|exists|taken/i.test(error.message||'')) return authForm('signup','That email already has an account — log in instead.');
+      throw error;
+    }
+    // Supabase hides existing emails for privacy: a re-signup returns a user with no identities
+    if(data.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
+      return authForm('signup','That email already has an account — log in instead.');
+    }
     if(data.session && data.user){ currentUser=data.user; updateAcctBtn(); await cloudPull(); closeModal(); enterApp(); }
     else codeForm('signup','We sent you a code.',true);
   }catch(e){ authForm('signup', e.message||'Could not sign up.'); }
