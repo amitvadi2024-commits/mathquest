@@ -23,14 +23,16 @@ function updateAcctBtn(){
 async function authBoot(){
   initSupabase();
   updateAcctBtn();
-  if(!sb) return;                       // guest mode — nothing else to do
+  if(!sb){ enterApp(); return; }         // accounts not configured → open access (guest)
   try{
     const { data:{ session } } = await sb.auth.getSession();
     if(session && session.user){ currentUser=session.user; await cloudPull(); enterApp(); }
+    else { showLanding(); }               // no session → keep the gate up
     sb.auth.onAuthStateChange((event,s)=>{
       const u=(s&&s.user)||null, was=currentUser;
       currentUser=u; updateAcctBtn();
-      if(u && (!was||was.id!==u.id)) cloudPull();   // fresh sign-in from the magic link
+      if(u){ if(!was||was.id!==u.id) cloudPull(); enterApp(); }
+      else { showLanding(); }             // signed out → back to the front page, locked out
     });
   }catch(e){}
   updateAcctBtn();
@@ -208,13 +210,14 @@ async function doResetVerify(){
 }
 async function doLogout(){
   try{ await sb.auth.signOut(); }catch(e){}
-  currentUser=null; updateAcctBtn(); closeModal();
+  currentUser=null; updateAcctBtn(); closeModal(); showLanding();   // locked back out to the front page
 }
 
 /* ---------------- landing / welcome gate ---------------- */
 function landingLogin(){ if(!sb) return openAccount(); authForm('login'); }
 function landingSignup(){ if(!sb) return openAccount(); authForm('signup'); }
-function enterApp(){ const l=document.getElementById('landing'); if(l) l.style.display='none'; try{localStorage.setItem('mq_entered','1');}catch(e){} }
+function enterApp(){ const l=document.getElementById('landing'); if(l) l.style.display='none'; }
+function showLanding(){ const l=document.getElementById('landing'); if(l){ l.style.display='flex'; try{window.scrollTo(0,0);}catch(e){} } fillLandingArt(); }
 function fillLandingArt(){
   const a=document.getElementById('lp-art'); if(!a || typeof qVisual!=='function') return;
   const cards=[
@@ -225,14 +228,7 @@ function fillLandingArt(){
   ];
   a.innerHTML=cards.map(([cap,v,r])=>`<div class="lp-card" style="--r:${r}"><div class="lp-cap">${cap}</div>${qVisual(v)}</div>`).join('');
 }
-function initLanding(){
-  const l=document.getElementById('landing'); if(!l) return;
-  let entered=false; try{ entered=localStorage.getItem('mq_entered')==='1'; }catch(e){}
-  if(entered){ l.style.display='none'; }
-  else { l.style.display='flex'; fillLandingArt(); }
-}
-
 /* boot */
-function _boot(){ authBoot(); initLanding(); }
+function _boot(){ showLanding(); authBoot(); }   // gate up first; authBoot opens it only if logged in
 if(document.readyState!=='loading') _boot();
 else document.addEventListener('DOMContentLoaded', _boot);
