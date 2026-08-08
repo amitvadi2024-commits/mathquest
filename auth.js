@@ -96,42 +96,71 @@ function openAccount(){
       <button id="modal-ok" onclick="closeModal()">Done</button>`;
     $('modal').style.display='flex'; return;
   }
-  linkForm('email');
+  authForm();
 }
-let _otpEmail='';
-function linkForm(step,msg){
-  const good=/✓/.test(msg||'');
-  const ist='width:100%;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:10px;font-size:1rem;box-sizing:border-box';
-  if(step==='email'){
-    $('modal-box').innerHTML=`<div class="big">👤</div><h3>Sign in</h3>
-      <p style="font-size:.84rem;color:var(--muted);line-height:1.5;margin:0 0 4px">Enter your email and we'll send a one-tap sign-in link. No password — new here or returning, it's the same step.</p>
-      <input id="acc-email" type="email" placeholder="you@example.com" autocomplete="email" style="${ist}"
-        onkeydown="if(event.key==='Enter')sendLink()">
-      <div id="acc-msg" style="font-size:.82rem;color:${good?'var(--teal)':'var(--coral)'};min-height:18px;margin:4px 0;line-height:1.4">${msg||''}</div>
-      <button id="modal-ok" onclick="sendLink()">Email me a sign-in link</button>
-      <button class="back-link" style="margin-top:8px;background:none;border:none" onclick="closeModal()">Cancel</button>`;
-    $('modal').style.display='flex';
-    setTimeout(()=>{ const e=$('acc-email'); if(e){e.value=_otpEmail; e.focus();} },50);
-  }else{
-    $('modal-box').innerHTML=`<div class="big">✉️</div><h3>Check your email</h3>
-      <p style="font-size:.86rem;color:var(--muted);line-height:1.5">We sent a sign-in link to <b>${_otpEmail}</b>. Open that email <b>on this device</b> and tap the link — it brings you right back here, signed in.</p>
-      <p style="font-size:.78rem;color:var(--muted);line-height:1.4">${msg||'No email after a minute? Check spam, or resend.'}</p>
-      <button id="modal-ok" onclick="sendLink(true)">Resend link</button>
-      <button class="back-link" style="margin-top:8px;background:none;border:none" onclick="linkForm('email')">← Use a different email</button>`;
-    $('modal').style.display='flex';
+let _authEmail='';
+const _ist='width:100%;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:10px;font-size:1rem;box-sizing:border-box';
+function authForm(msg,good){
+  $('modal-box').innerHTML=`<div class="big">👤</div><h3>Log in or sign up</h3>
+    <input id="acc-email" type="email" placeholder="Email" autocomplete="email" style="${_ist}">
+    <input id="acc-pass" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" style="${_ist}" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="acc-msg" style="font-size:.82rem;color:${good?'var(--teal)':'var(--coral)'};min-height:18px;margin:4px 0;line-height:1.4">${msg||''}</div>
+    <button id="modal-ok" onclick="doLogin()">Log in</button>
+    <button class="set-btn" style="margin-top:8px" onclick="doSignup()">Create account</button>
+    <button class="back-link" style="margin-top:8px;background:none;border:none" onclick="closeModal()">Cancel</button>`;
+  $('modal').style.display='flex';
+  setTimeout(()=>{ const e=$('acc-email'); if(e){e.value=_authEmail; e.focus();} },50);
+}
+function codeForm(msg,good){
+  $('modal-box').innerHTML=`<div class="big">✉️</div><h3>Enter your code</h3>
+    <p style="font-size:.84rem;color:var(--muted);line-height:1.5">We emailed a 6-digit code to <b>${_authEmail}</b>. Enter it to verify your account. (Check spam if it's not there.)</p>
+    <input id="acc-code" inputmode="numeric" maxlength="6" placeholder="123456" style="${_ist};letter-spacing:6px;text-align:center;font-size:1.4rem" onkeydown="if(event.key==='Enter')verifyCode()">
+    <div id="acc-msg" style="font-size:.82rem;color:${good?'var(--teal)':'var(--coral)'};min-height:18px;margin:4px 0;line-height:1.4">${msg||''}</div>
+    <button id="modal-ok" onclick="verifyCode()">Verify & sign in</button>
+    <button class="set-btn" style="margin-top:8px" onclick="resendCode()">Resend code</button>
+    <button class="back-link" style="margin-top:8px;background:none;border:none" onclick="authForm()">← Back</button>`;
+  $('modal').style.display='flex';
+  setTimeout(()=>{ const e=$('acc-code'); if(e) e.focus(); },50);
+}
+async function doSignup(){
+  const email=(($('acc-email')||{}).value||'').trim(), pass=(($('acc-pass')||{}).value||'');
+  if(!email || !/.+@.+\..+/.test(email) || pass.length<6) return authForm('Enter a valid email and a password of at least 6 characters.');
+  _authEmail=email; const m=$('acc-msg'); if(m) m.textContent='Creating account…';
+  try{
+    const { data, error } = await sb.auth.signUp({ email, password:pass });
+    if(error) throw error;
+    if(data.session && data.user){ currentUser=data.user; updateAcctBtn(); await cloudPull(); closeModal(); }
+    else codeForm('We sent you a 6-digit code.',true);
+  }catch(e){ authForm(e.message||'Could not sign up.'); }
+}
+async function doLogin(){
+  const email=(($('acc-email')||{}).value||'').trim(), pass=(($('acc-pass')||{}).value||'');
+  if(!email || !pass) return authForm('Enter your email and password.');
+  _authEmail=email; const m=$('acc-msg'); if(m) m.textContent='Signing in…';
+  try{
+    const { data, error } = await sb.auth.signInWithPassword({ email, password:pass });
+    if(error) throw error;
+    currentUser=data.user; updateAcctBtn(); await cloudPull(); closeModal();
+  }catch(e){
+    if(/confirm/i.test(e.message||'')) codeForm('Confirm your email first — enter the 6-digit code we emailed you.');
+    else authForm(e.message||'Could not log in.');
   }
 }
-async function sendLink(resend){
-  const email=resend? _otpEmail : (($('acc-email')||{}).value||'').trim();
-  if(!email || !/.+@.+\..+/.test(email)) return linkForm('email','Enter a valid email address.');
-  _otpEmail=email;
-  const msg=$('acc-msg'); if(msg) msg.textContent='Sending link…';
+async function verifyCode(){
+  const token=(($('acc-code')||{}).value||'').trim();
+  if(token.length<6) return codeForm('Enter the 6-digit code from your email.');
+  const m=$('acc-msg'); if(m) m.textContent='Verifying…';
   try{
-    const redirect=window.location.origin+window.location.pathname;   // come back to wherever the site is hosted
-    const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirect } });
-    if(error) throw error;
-    linkForm('sent', resend?'✓ New link sent.':'');
-  }catch(e){ linkForm('email', e.message||'Could not send the link.'); }
+    let res=await sb.auth.verifyOtp({ email:_authEmail, token, type:'signup' });
+    if(res.error){ const r2=await sb.auth.verifyOtp({ email:_authEmail, token, type:'email' }); if(!r2.error) res=r2; }
+    if(res.error) throw res.error;
+    currentUser=res.data.user; updateAcctBtn(); await cloudPull(); closeModal();
+  }catch(e){ codeForm(e.message||'That code was wrong or expired. Try again.'); }
+}
+async function resendCode(){
+  const m=$('acc-msg'); if(m) m.textContent='Resending…';
+  try{ const { error } = await sb.auth.resend({ type:'signup', email:_authEmail }); if(error) throw error; codeForm('✓ New code sent.',true); }
+  catch(e){ codeForm(e.message||'Could not resend.'); }
 }
 async function doLogout(){
   try{ await sb.auth.signOut(); }catch(e){}
