@@ -3,7 +3,7 @@
 ========================================================================== */
 const $=id=>document.getElementById(id);
 const gorder=['g4','g5','g6'];
-const UNITLABEL={g4u1:"Place Value",g4u2:"Multiply",g4u3:"Fractions",g4u4:"Decimals",g4u5:"Geometry",
+const UNITLABEL={g4u1:"Place Value",g4u2as:"Add & Subtract",g4u3mul:"Multiply",g4u4mul:"Multiply 2-Digit",g4u2:"Division",g4u6:"Factors & Patterns",g4u3:"Fractions",g4u8:"Add/Sub Fractions",g4u9:"Multiply Fractions",g4u4:"Decimals",g4u11:"Measurement",g4u12:"Perimeter & Area",g4u5:"Lines & Angles",g4u14:"Symmetry & Shapes",
  g5u1:"Place Value",g5u2:"Decimals",g5u3:"Fractions",g5u4:"Volume",g5u5:"Coordinates",
  g6u1:"Ratios",g6u2:"Numbers",g6u3:"Equations",g6u4:"Geometry",g6u5:"Statistics"};
 function ulabel(u){return UNITLABEL[u.id]||u.code;}
@@ -99,6 +99,15 @@ const IV={
    <label class="fld">Number: <span id="fo-n-lbl">5213</span></label><input type="range" id="fo-n" min="0" max="9999" value="5213" oninput="ivForms()">
    <div id="fo-out"></div></div>`,
   init(){ivForms();}},
+ digitbuilder:{html:`<div class="playground"><h4>Build the Number</h4>
+   <p style="text-align:center;font-size:.85rem;color:var(--muted)">Roll 6 digit cards, then arrange them to make the greatest or least number.</p>
+   <div id="db-tiles" style="text-align:center;margin:8px 0"></div>
+   <div style="text-align:center;margin-bottom:6px">
+     <button class="go-btn" style="background:var(--brand)" onclick="dbSort('great')">Make Greatest</button>
+     <button class="go-btn" style="background:var(--teal)" onclick="dbSort('least')">Make Least</button>
+     <button class="go-btn ghost" onclick="dbRoll()">Roll New</button></div>
+   <div class="readout"><div class="chip"><b id="db-num">—</b><span>your number</span></div></div></div>`,
+  init(){dbRoll();}},
  array:{html:`<div class="playground"><h4>✖️ Multiplication Array</h4>
    <label class="fld">Rows: <span id="ar-r-lbl">4</span></label><input type="range" id="ar-r" min="1" max="10" value="4" oninput="ivArray()">
    <label class="fld">Columns: <span id="ar-c-lbl">6</span></label><input type="range" id="ar-c" min="1" max="10" value="6" oninput="ivArray()">
@@ -231,6 +240,116 @@ function ivForms(){const n=+$('fo-n').value;$('fo-n-lbl').textContent=n;
     <div><b style="color:var(--brand)">Standard:</b> ${n.toLocaleString()}</div>
     <div><b style="color:var(--brand)">Word:</b> ${numWords(n)||'zero'}</div>
     <div><b style="color:var(--brand)">Expanded:</b> ${parts.length?parts.join(' + '):'0'}</div></div>`;}
+let dbDigits=[];
+function dbRoll(){dbDigits=[];for(let i=0;i<6;i++)dbDigits.push(rint(0,9));dbRender();if(typeof sfx!=='undefined')sfx.click();}
+function dbRender(){const el=$('db-tiles');if(!el)return;el.innerHTML=dbDigits.map(d=>`<span style="display:inline-block;width:34px;height:42px;line-height:42px;margin:3px;border-radius:8px;background:var(--brand);color:#fff;font-weight:800;font-size:1.25rem">${d}</span>`).join('');
+  const num=$('db-num');if(num)num.textContent=Number(dbDigits.join('')).toLocaleString();}
+function dbSort(mode){let s=[...dbDigits].sort((a,b)=>mode==='great'?b-a:a-b);
+  if(mode==='least'&&s[0]===0){const k=s.findIndex(x=>x>0);if(k>0){[s[0],s[k]]=[s[k],s[0]];}}
+  dbDigits=s;dbRender();if(typeof sfx!=='undefined')sfx.correct();}
+function chartSVG(n){const s=(''+n),nm=['ones','tens','hundreds','thousands','ten-thousands','hundred-thousands'];
+  let c='';for(let i=0;i<s.length;i++){const p=s.length-1-i;c+=`<div class="pv-col" style="min-width:58px"><span class="pv-place">${nm[p]}</span><span class="pv-digit">${s[i]}</span></div>`;}
+  return `<div class="pv-chart" style="justify-content:center">${c}</div>`;}
+function rlSVG(n){const lo=Math.floor(n/100)*100,hi=lo+100,mid=lo+50,W=300,pad=30,X=v=>pad+((v-lo)/100)*(W-2*pad);
+  return `<svg viewBox="0 0 ${W} 58" style="background:#fff;border-radius:10px;max-width:320px"><line x1="${pad}" y1="32" x2="${W-pad}" y2="32" stroke="#999" stroke-width="2"/><line x1="${X(mid)}" y1="26" x2="${X(mid)}" y2="38" stroke="#f2a33c" stroke-dasharray="3"/><text x="${X(mid)}" y="52" font-size="8" fill="#f2a33c" text-anchor="middle">halfway ${mid}</text><circle cx="${X(lo)}" cy="32" r="4" fill="#2f54eb"/><text x="${X(lo)}" y="18" font-size="10" fill="#2f54eb" text-anchor="middle">${lo}</text><circle cx="${X(hi)}" cy="32" r="4" fill="#2f54eb"/><text x="${X(hi)}" y="18" font-size="10" fill="#2f54eb" text-anchor="middle">${hi}</text><circle cx="${X(n)}" cy="32" r="6" fill="#e14b4b"/><text x="${X(n)}" y="18" font-size="10" font-weight="bold" fill="#e14b4b" text-anchor="middle">${n}</text></svg>`;}
+function cmpSVG(a,b){return `<div style="text-align:center"><div style="font-size:.72rem;color:var(--muted);font-weight:700">A</div>${blocksSVG(a)}<div style="font-size:.72rem;color:var(--muted);font-weight:700;margin-top:8px">B</div>${blocksSVG(b)}</div>`;}
+/* ===================== Grade-4 visual library ===================== */
+function decompPV(n){const s=''+n;const arr=[];for(let i=0;i<s.length;i++){const d=+s[i];if(d)arr.push(d*Math.pow(10,s.length-1-i));}return arr.length?arr:[0];}
+function segTick(x1,y1,x2,y2,count,color){const mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,px=-uy,py=ux;let s='';for(let k=0;k<count;k++){const off=(k-(count-1)/2)*4,cx=mx+ux*off,cy=my+uy*off;s+=`<line x1="${(cx-px*5).toFixed(1)}" y1="${(cy-py*5).toFixed(1)}" x2="${(cx+px*5).toFixed(1)}" y2="${(cy+py*5).toFixed(1)}" stroke="${color}" stroke-width="2"/>`;}return s;}
+// area model / partial products
+function areaModelSVG(a,b){const cols=decompPV(a),rows=decompPV(b);const cw=Math.max(58,Math.min(96,300/cols.length)),ch=46,padL=42,padT=24;
+  const W=padL+cols.length*cw+8,H=padT+rows.length*ch+22,tint=['#0ea5e9','#14b8a6','#a855f7','#f59e0b'];let s='';
+  cols.forEach((c,i)=>s+=`<text x="${padL+i*cw+cw/2}" y="${padT-7}" font-size="12" font-weight="700" fill="#2b2640" text-anchor="middle">${c}</text>`);
+  rows.forEach((r,j)=>s+=`<text x="${padL-7}" y="${padT+j*ch+ch/2+4}" font-size="12" font-weight="700" fill="#2b2640" text-anchor="end">${r}</text>`);
+  rows.forEach((r,j)=>cols.forEach((c,i)=>{const x=padL+i*cw,y=padT+j*ch,col=tint[i%tint.length];
+    s+=`<rect x="${x}" y="${y}" width="${cw-3}" height="${ch-3}" rx="6" fill="${col}22" stroke="${col}" stroke-width="1.5"/><text x="${x+(cw-3)/2}" y="${y+ch/2+4}" font-size="13" font-weight="700" fill="#2b2640" text-anchor="middle">${(r*c).toLocaleString()}</text>`;}));
+  s+=`<text x="${W/2}" y="${H-6}" font-size="11" fill="#64748b" text-anchor="middle">${a} × ${b}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="background:#fff;border-radius:12px;max-width:340px">${s}</svg>`;}
+// dot array
+function arraySVG(r,c){const cell=Math.max(12,Math.min(24,260/Math.max(r,c)));let d='';
+  for(let y=0;y<r;y++)for(let x=0;x<c;x++)d+=`<circle cx="${(12+x*cell).toFixed(1)}" cy="${(12+y*cell).toFixed(1)}" r="${(cell*0.3).toFixed(1)}" fill="#0ea5e9"/>`;
+  return `<svg viewBox="0 0 ${(24+c*cell).toFixed(0)} ${(24+r*cell).toFixed(0)}" style="background:#fff;border-radius:12px;max-height:190px;max-width:320px">${d}</svg>`;}
+// labeled rectangle on a unit grid
+function areaRectSVG(l,w){const u=Math.max(12,Math.min(28,260/Math.max(l,w))),padL=22,padT=8;const W=padL+l*u+14,H=padT+w*u+26;let g='';
+  for(let y=0;y<w;y++)for(let x=0;x<l;x++)g+=`<rect x="${padL+x*u}" y="${padT+y*u}" width="${u}" height="${u}" fill="#0ea5e922" stroke="#0ea5e9" stroke-width="1"/>`;
+  g+=`<text x="${padL+l*u/2}" y="${padT+w*u+17}" font-size="12" font-weight="700" fill="#0ea5e9" text-anchor="middle">${l}</text>`;
+  g+=`<text x="${padL-7}" y="${padT+w*u/2+4}" font-size="12" font-weight="700" fill="#0ea5e9" text-anchor="end">${w}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="background:#fff;border-radius:12px;max-width:320px">${g}</svg>`;}
+// fraction bar(s)
+function fbarSVG(n,d,n2,d2){const W=280;function bar(n,d,y,col){const seg=W/d;let s='';for(let i=0;i<d;i++)s+=`<rect x="${(i*seg).toFixed(1)}" y="${y}" width="${(seg-2).toFixed(1)}" height="38" rx="4" fill="${i<n?col:'#fff'}" stroke="${col}" stroke-width="2"/>`;return s;}
+  let body=bar(n,d,4,'#fb7185'),H=46;if(n2!==undefined){body+=bar(n2,d2,52,'#0ea5e9');H=94;}
+  return `<svg viewBox="0 0 ${W} ${H}" style="background:#fff;border-radius:12px;max-width:320px">${body}</svg>`;}
+// fraction circle
+function fcircleSVG(n,d){const cx=60,cy=60,r=50;let s='';if(d<2)return `<svg viewBox="0 0 120 120" style="background:#fff;border-radius:12px;max-height:150px"><circle cx="60" cy="60" r="50" fill="${n>=1?'#fb7185':'#fff'}" stroke="#fb7185" stroke-width="2"/></svg>`;
+  for(let i=0;i<d;i++){const a0=(i/d)*2*Math.PI-Math.PI/2,a1=((i+1)/d)*2*Math.PI-Math.PI/2;const x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
+    s+=`<path d="M${cx} ${cy} L${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)} Z" fill="${i<n?'#fb7185':'#fff'}" stroke="#fb7185" stroke-width="2"/>`;}
+  return `<svg viewBox="0 0 120 120" style="background:#fff;border-radius:12px;max-height:150px">${s}</svg>`;}
+// general number line
+function numlineSVG(o){const W=320,pad=30,Y=34,lo=o.lo,hi=o.hi,X=v=>pad+((v-lo)/(hi-lo))*(W-2*pad);
+  let s=`<line x1="${pad}" y1="${Y}" x2="${W-pad}" y2="${Y}" stroke="#94a3b8" stroke-width="2"/>`;
+  (o.ticks||[]).forEach(t=>{s+=`<line x1="${X(t.v).toFixed(1)}" y1="${Y-6}" x2="${X(t.v).toFixed(1)}" y2="${Y+6}" stroke="#94a3b8"/><text x="${X(t.v).toFixed(1)}" y="${Y+21}" font-size="10" fill="#64748b" text-anchor="middle">${t.l}</text>`;});
+  if(o.mark!==undefined){s+=`<circle cx="${X(o.mark).toFixed(1)}" cy="${Y}" r="7" fill="#fb7185"/>`;if(o.markLabel)s+=`<text x="${X(o.mark).toFixed(1)}" y="${Y-12}" font-size="11" font-weight="700" fill="#fb7185" text-anchor="middle">${o.markLabel}</text>`;}
+  return `<svg viewBox="0 0 ${W} 58" style="background:#fff;border-radius:12px;max-width:340px">${s}</svg>`;}
+function fraclineSVG(n,d){const ticks=[];for(let i=0;i<=d;i++)ticks.push({v:i/d,l:i===0?'0':i===d?'1':i+'/'+d});return numlineSVG({lo:0,hi:1,ticks,mark:n/d,markLabel:n+'/'+d});}
+// decimal grids
+function dgridSVG(n){let c='';for(let i=0;i<100;i++){const x=i%10,y=Math.floor(i/10);c+=`<rect x="${x*15}" y="${y*15}" width="14" height="14" fill="${i<n?'#f59e0b':'#fff'}" stroke="#ffd8a8"/>`;}
+  return `<svg viewBox="0 0 150 150" style="background:#fff;border-radius:12px;max-height:170px">${c}</svg>`;}
+function tenthsSVG(n){const seg=28;let s='';for(let i=0;i<10;i++)s+=`<rect x="${i*seg}" y="0" width="${seg-2}" height="38" fill="${i<n?'#f59e0b':'#fff'}" stroke="#f59e0b" stroke-width="2"/>`;
+  return `<svg viewBox="0 0 ${10*seg} 40" style="background:#fff;border-radius:12px;max-width:300px">${s}</svg>`;}
+// angle diagram
+function angleSVG(deg,lab){const cx=34,cy=96,len=124,rad=deg*Math.PI/180,x2=cx+len*Math.cos(-rad),y2=cy-len*Math.sin(rad);
+  let mark;if(deg===90)mark=`<path d="M${cx+16} ${cy} L${cx+16} ${cy-16} L${cx} ${cy-16}" fill="none" stroke="#fb7185" stroke-width="2"/>`;
+  else{const ar=26,ax=cx+ar,ay=cy,bx=cx+ar*Math.cos(-rad),by=cy-ar*Math.sin(rad),large=deg>180?1:0;mark=`<path d="M${ax} ${ay} A${ar} ${ar} 0 ${large} 0 ${bx.toFixed(1)} ${by.toFixed(1)}" fill="none" stroke="#fb7185" stroke-width="2"/>`;}
+  const lt=lab?`<text x="${cx+46}" y="${cy-9}" font-size="12" font-weight="700" fill="#fb7185">${deg}°</text>`:'';
+  return `<svg viewBox="0 0 210 120" style="background:#fff;border-radius:12px;max-width:250px"><line x1="${cx}" y1="${cy}" x2="${cx+len}" y2="${cy}" stroke="#0ea5e9" stroke-width="3"/><line x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#0ea5e9" stroke-width="3"/>${mark}${lt}<circle cx="${cx}" cy="${cy}" r="4" fill="#2b2640"/></svg>`;}
+// triangles
+function triangleSVG(o){const col='#14b8a6';let pts,ticks='',mark='';
+  if(o.by==='angles'){if(o.kind==='right'){pts=[[26,18],[26,104],[120,104]];mark=`<path d="M42 104 L42 88 L26 88" fill="none" stroke="#fb7185" stroke-width="2"/>`;}
+    else if(o.kind==='obtuse'){pts=[[30,96],[178,96],[14,40]];}
+    else{pts=[[74,16],[22,106],[126,106]];}}
+  else{if(o.kind==='equilateral'){pts=[[70,14],[18,104],[122,104]];ticks=segTick(70,14,18,104,1,col)+segTick(18,104,122,104,1,col)+segTick(122,104,70,14,1,col);}
+    else if(o.kind==='isosceles'){pts=[[70,14],[24,106],[116,106]];ticks=segTick(70,14,24,106,1,col)+segTick(116,106,70,14,1,col);}
+    else{pts=[[24,20],[16,106],[128,88]];ticks=segTick(24,20,16,106,1,col)+segTick(16,106,128,88,2,col)+segTick(128,88,24,20,3,col);}}
+  const poly=pts.map(p=>p.join(',')).join(' ');
+  return `<svg viewBox="0 0 200 120" style="background:#fff;border-radius:12px;max-width:230px"><polygon points="${poly}" fill="${col}22" stroke="${col}" stroke-width="2.5"/>${mark}${ticks}</svg>`;}
+// quadrilaterals
+function quadSVG(kind){const col='#a855f7';let pts,marks='';
+  const rAng=(x,y,dx,dy)=>`<path d="M${x+dx} ${y} L${x+dx} ${y+dy} L${x} ${y+dy}" fill="none" stroke="#fb7185" stroke-width="1.8"/>`;
+  if(kind==='rectangle'){pts=[[24,26],[176,26],[176,96],[24,96]];marks=rAng(24,26,16,16)+rAng(176,26,-16,16);}
+  else if(kind==='square'){pts=[[54,20],[150,20],[150,116],[54,116]];marks=rAng(54,20,16,16)+rAng(150,20,-16,16)+segTick(54,20,150,20,1,col)+segTick(150,20,150,116,1,col)+segTick(150,116,54,116,1,col)+segTick(54,116,54,20,1,col);}
+  else if(kind==='rhombus'){pts=[[100,16],[168,68],[100,120],[32,68]];marks=segTick(100,16,168,68,1,col)+segTick(168,68,100,120,1,col)+segTick(100,120,32,68,1,col)+segTick(32,68,100,16,1,col);}
+  else if(kind==='parallelogram'){pts=[[48,26],[178,26],[140,98],[10,98]];marks=`<text x="110" y="20" font-size="13" fill="#0ea5e9">»</text><text x="72" y="112" font-size="13" fill="#0ea5e9">»</text>`;}
+  else{pts=[[58,26],[142,26],[186,98],[14,98]];marks=`<text x="98" y="20" font-size="13" fill="#0ea5e9">»</text><text x="98" y="112" font-size="13" fill="#0ea5e9">»</text>`;}// trapezoid
+  const poly=pts.map(p=>p.join(',')).join(' ');
+  return `<svg viewBox="0 0 200 130" style="background:#fff;border-radius:12px;max-width:230px"><polygon points="${poly}" fill="${col}22" stroke="${col}" stroke-width="2.5"/>${marks}</svg>`;}
+// shape with dashed lines of symmetry
+function symmetrySVG(o){const col='#d946ef',cx=100,cy=64;let pts,lines=[];
+  if(o.shape==='square'){pts=[[52,16],[148,16],[148,112],[52,112]];lines=[[100,10,100,118],[46,64,154,64],[52,16,148,112],[148,16,52,112]];}
+  else if(o.shape==='rectangle'){pts=[[24,28],[176,28],[176,100],[24,100]];lines=[[100,22,100,106],[18,64,182,64]];}
+  else if(o.shape==='triangle'){pts=[[100,14],[40,112],[160,112]];lines=[[100,14,100,112],[40,112,130,63],[160,112,70,63]];}
+  else if(o.shape==='pentagon'){pts=[];for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5;pts.push([100+50*Math.cos(a),64+50*Math.sin(a)]);}lines=pts.map(p=>[p[0],p[1],200-p[0]<0?p[0]:cx*2-p[0]]);lines=[];for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5;lines.push([100+58*Math.cos(a),64+58*Math.sin(a),100-58*Math.cos(a),64-58*Math.sin(a)]);}}
+  else{pts=[];for(let i=0;i<6;i++){const a=-Math.PI/2+i*2*Math.PI/6;pts.push([100+48*Math.cos(a),64+48*Math.sin(a)]);}lines=[[100,10,100,118],[52,64,148,64],[60,30,140,98],[140,30,60,98],[75,22,125,106],[125,22,75,106]];}
+  const poly=pts.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ');
+  let ln='';if(o.showLines!==false)lines.forEach(l=>ln+=`<line x1="${l[0].toFixed(1)}" y1="${l[1].toFixed(1)}" x2="${l[2].toFixed(1)}" y2="${l[3].toFixed(1)}" stroke="${col}" stroke-width="1.6" stroke-dasharray="5 4"/>`);
+  return `<svg viewBox="0 0 200 128" style="background:#fff;border-radius:12px;max-width:230px"><polygon points="${poly}" fill="#0ea5e922" stroke="#0ea5e9" stroke-width="2.5"/>${ln}</svg>`;}
+// analog clock
+function clockSVG(h,m){const cx=60,cy=60,r=50;let t='';for(let i=0;i<12;i++){const a=i*Math.PI/6;t+=`<line x1="${(cx+44*Math.sin(a)).toFixed(1)}" y1="${(cy-44*Math.cos(a)).toFixed(1)}" x2="${(cx+50*Math.sin(a)).toFixed(1)}" y2="${(cy-50*Math.cos(a)).toFixed(1)}" stroke="#94a3b8" stroke-width="2"/>`;}
+  const ha=((h%12)+m/60)*Math.PI/6,ma=m*Math.PI/30;
+  return `<svg viewBox="0 0 120 120" style="background:#fff;border-radius:12px;max-height:150px"><circle cx="60" cy="60" r="52" fill="#fff" stroke="#0ea5e9" stroke-width="2.5"/>${t}<line x1="60" y1="60" x2="${(cx+26*Math.sin(ha)).toFixed(1)}" y2="${(cy-26*Math.cos(ha)).toFixed(1)}" stroke="#2b2640" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="60" x2="${(cx+40*Math.sin(ma)).toFixed(1)}" y2="${(cy-40*Math.cos(ma)).toFixed(1)}" stroke="#fb7185" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="60" r="3.5" fill="#2b2640"/></svg>`;}
+// line plot / dot plot
+function dotplotSVG(data){const min=Math.min(...data),max=Math.max(...data),n=max-min+1,step=Math.min(34,260/n),padL=20,baseY=96;let s='';
+  const counts={};data.forEach(v=>counts[v]=(counts[v]||0)+1);
+  s+=`<line x1="${padL}" y1="${baseY}" x2="${padL+(n-1)*step+step}" y2="${baseY}" stroke="#94a3b8" stroke-width="2"/>`;
+  for(let v=min;v<=max;v++){const x=padL+(v-min)*step+step/2;s+=`<text x="${x.toFixed(1)}" y="${baseY+16}" font-size="10" fill="#64748b" text-anchor="middle">${v}</text>`;
+    const c=counts[v]||0;for(let k=0;k<c;k++)s+=`<circle cx="${x.toFixed(1)}" cy="${baseY-10-k*11}" r="4" fill="#0ea5e9"/>`;}
+  return `<svg viewBox="0 0 ${padL+n*step+10} 116" style="background:#fff;border-radius:12px;max-width:340px">${s}</svg>`;}
+function qVisual(v){if(v===undefined||v===null)return '';if(typeof v==='number')return blocksSVG(v);
+  if(v.type==='blocks')return blocksSVG(v.n);if(v.type==='chart')return chartSVG(v.n);if(v.type==='rl')return rlSVG(v.n);if(v.type==='cmp')return cmpSVG(v.a,v.b);
+  if(v.type==='area')return areaModelSVG(v.a,v.b);if(v.type==='array')return arraySVG(v.r,v.c);if(v.type==='arect')return areaRectSVG(v.l,v.w);
+  if(v.type==='fbar')return fbarSVG(v.n,v.d,v.n2,v.d2);if(v.type==='fcircle')return fcircleSVG(v.n,v.d);if(v.type==='fracline')return fraclineSVG(v.n,v.d);
+  if(v.type==='numline')return numlineSVG(v);if(v.type==='dgrid')return dgridSVG(v.n);if(v.type==='tenths')return tenthsSVG(v.n);
+  if(v.type==='angle')return angleSVG(v.deg,v.lab!==false);if(v.type==='tri')return triangleSVG(v);if(v.type==='quad')return quadSVG(v.kind);
+  if(v.type==='sym')return symmetrySVG(v);if(v.type==='clock')return clockSVG(v.h,v.m);if(v.type==='dotplot')return dotplotSVG(v.data);return '';}
 function ivArray(){const r=+$('ar-r').value,c=+$('ar-c').value;$('ar-r-lbl').textContent=r;$('ar-c-lbl').textContent=c;$('ar-prod').textContent=r*c;
   const cell=18;let dots='';for(let y=0;y<r;y++)for(let x=0;x<c;x++)dots+=`<circle cx="${12+x*cell}" cy="${12+y*cell}" r="6" fill="#0ea5e9"/>`;
   $('ar-out').innerHTML=`<svg viewBox="0 0 ${24+c*cell} ${24+r*cell}" style="background:#fff;border-radius:12px;max-height:200px">${dots}</svg>`;}
@@ -321,7 +440,7 @@ function renderHome(){
       <div class="stat"><div class="num">${acc}${acc==='—'?'':'%'}</div><div class="label">Accuracy</div></div>
       <div class="stat"><div class="num">${badgeCount()}</div><div class="label">Badges</div></div>
     </div>
-    <h2 class="section-title">Choose your grade</h2><p class="sub">Each grade has a placement check, 5 units, mini-lessons, quizzes and a final test.</p>
+    <h2 class="section-title">Choose your grade</h2><p class="sub">Each grade has a placement check, units, mini-lessons, quizzes and a final test.</p>
     <div class="grade-cards">${gcards}</div>`;
 }
 
@@ -416,7 +535,7 @@ function renderQ(){const q=Q.list[Q.i];Q.answered=false;
     <div style="font-weight:800;color:var(--muted);margin-bottom:6px">${Q.cfg.title}</div>
     <div class="dots">${dots}</div>
     <div class="q-text">${Q.i+1}. ${q.q}</div>
-    ${q.vis!==undefined?`<div class="q-visual" style="text-align:center;margin:8px 0">${blocksSVG(q.vis)}</div>`:''}
+    ${q.vis!==undefined?`<div class="q-visual" style="text-align:center;margin:8px 0">${qVisual(q.vis)}</div>`:''}
     ${speakCtl()}
     <div class="options" id="q-opts">${q.o.map((o,k)=>`<button class="opt" onclick="pick(${k})">${o}</button>`).join('')}</div>
     <div class="feedback" id="q-fb"></div>
@@ -637,7 +756,7 @@ function updateNavAvatar(){/* no-op: nav avatar removed */}
 /* ==========================================================================
    NEW MINIGAMES  (generator-fed) + combos
 ========================================================================== */
-function genQ(L){return GEN[pickOne(allUnitIds())](Math.min(L,3));}
+function genQ(L){let q,t=0;do{q=GEN[pickOne(allUnitIds())](Math.min(L,3));t++;}while(q.vis!==undefined&&t<25);return q;}
 const MSTOPICS=['msChange','msTwoStep','msReverseRect','msReverseTri','msCompare','msFractionOf','msPercent'];
 function startBalloon(){sfx.click();openGame();stopGame();const tok=gameToken;
   let time=60,sc=0,combo=0,best=0,cor=0,ans=0,lvl=1,balloons=[];
@@ -699,7 +818,13 @@ function mc(correct,wrongs){correct=String(correct);let o=[correct];
 function frac(n,d){return n+'/'+d;}
 
 const GEN={
- g4u1(L){const r=Math.random();
+ g4u1(L){
+   /* visual: identify the number shown by base-ten blocks */
+   if(Math.random()<.22){const th=rint(1,3),h=rint(0,6),te=rint(0,6),o=rint(0,9),bn=th*1000+h*100+te*10+o;
+     const digs=(''+bn).split('');function prm(){const a=[...digs];for(let i=a.length-1;i>0;i--){const j=rint(0,i);[a[i],a[j]]=[a[j],a[i]];}return a.join('');}
+     let w=[],g=0;while(w.length<3&&g<60){g++;const p=prm();if(p!==(''+bn)&&p[0]!=='0'&&!w.includes(p))w.push(p);}
+     return Object.assign({q:`What number do these base-ten blocks show?`,vis:bn,why:`Count each group: ${th} thousand${th>1?'s':''}, ${h} hundreds, ${te} tens, ${o} ones → ${bn.toLocaleString()}.`},mc(bn.toLocaleString(),w.map(x=>Number(x).toLocaleString())));}
+   const r=Math.random();
    /* (a) value of a unique digit in a big number */
    if(r<.22){const dig=[3,4,5][L-1]||4;let s='',pos=-1;
      for(let t=0;t<50;t++){s='';for(let i=0;i<dig;i++)s+=rint(i===0?1:0,9);
@@ -708,7 +833,7 @@ const GEN={
      if(pos<0)pos=0;const n=parseInt(s),d=+s[pos],place=dig-1-pos,val=d*Math.pow(10,place);
      const wrongs=[d*Math.pow(10,place+1)];if(place>=1)wrongs.push(d);if(place>=2)wrongs.push(d*Math.pow(10,place-1));
      let kk=place+2;while(wrongs.length<3&&kk<=7){const c=d*Math.pow(10,kk);if(c!==val&&!wrongs.includes(c))wrongs.push(c);kk++;}
-     return Object.assign({q:`What is the value of the ${d} in ${n.toLocaleString()}?`,why:`The ${d} is in the ${['ones','tens','hundreds','thousands','ten-thousands'][place]} place, so it's worth ${val.toLocaleString()}.`},mc(val,wrongs));}
+     return Object.assign({q:`What is the value of the ${d} in the place value chart?`,vis:{type:'chart',n},why:`The ${d} is in the ${['ones','tens','hundreds','thousands','ten-thousands'][place]} place, so it's worth ${val.toLocaleString()}.`},mc(val,wrongs));}
    /* (b) the "10 times" place-value relationship */
    if(r<.38){const pl=['ones','tens','hundreds','thousands'],i=rint(1,3);
      return Object.assign({q:`A digit in the ${pl[i]} place is worth ___ a digit in the ${pl[i-1]} place.`,why:`Each place to the left is worth 10 times the place on its right.`},mc('10 times',['the same as','1/10 of','100 times']));}
@@ -727,26 +852,206 @@ const GEN={
    /* (e) compare two numbers */
    if(r<.85){const dig=rint(3,4),lo=Math.pow(10,dig-1),hi=Math.pow(10,dig)-1;let a,b;
      do{a=rint(lo,hi);b=a+(rint(1,80)-40);}while(a===b||b<lo||b>hi);
-     return {q:`Which is greater, ${a.toLocaleString()} or ${b.toLocaleString()}?`,o:[a.toLocaleString(),b.toLocaleString(),"they are equal","can't tell"],a:(a>b?0:1),why:`Compare left to right; ${(a>b?a:b).toLocaleString()} is greater.`};}
+     const item={q:`Which is greater, ${a.toLocaleString()} or ${b.toLocaleString()}?`,o:[a.toLocaleString(),b.toLocaleString(),"they are equal","can't tell"],a:(a>b?0:1),why:`Compare left to right; ${(a>b?a:b).toLocaleString()} is greater.`};
+     if(dig===3)item.vis={type:'cmp',a,b};return item;}
    /* (f) rounding */
    const rdig=rint(4,5);let rs='';for(let i=0;i<rdig;i++)rs+=rint(i===0?1:0,9);const rn=parseInt(rs);
    const rpl=rdig===4?pickOne([100,1000]):pickOne([1000,10000]),rr=Math.round(rn/rpl)*rpl,rname={100:'hundred',1000:'thousand',10000:'ten thousand'}[rpl];
    return Object.assign({q:`Round ${rn.toLocaleString()} to the nearest ${rname}.`,why:`Look at the digit just right of the ${rname} place: ${rn.toLocaleString()} rounds to ${rr.toLocaleString()}.`},mc(rr.toLocaleString(),[(rr+rpl).toLocaleString(),Math.max(0,rr-rpl).toLocaleString(),rn.toLocaleString(),(rr+2*rpl).toLocaleString()]));},
- g4u2(L){const hi=[9,12,25][L-1]||12;const r=Math.random();
-   if(r<.33){const a=rint(2,hi),b=rint(2,9),nm=pickOne(['boxes','baskets','bags','shelves','rows']),it=pickOne(['apples','books','marbles','pencils','cookies']);
-     return Object.assign({q:`There are ${a} ${nm} with ${b} ${it} in each. How many ${it} in all?`,why:`${a} × ${b} = ${a*b}.`},mc(a*b,[a*b+a,a*b-b,(a+1)*b]));}
-   if(r<.66){const a=rint(2,hi),b=rint(2,9);
-     return Object.assign({q:`${a} × ${b} =`,why:`${a} groups of ${b} = ${a*b}.`},mc(a*b,[a*b+a,a*b-b,(a+1)*b]));}
-   const d=rint(2,9),q=rint(2,hi),n=d*q;return Object.assign({q:`${n} ${pickOne(['cookies','stickers','marbles'])} shared equally among ${d} kids — each gets:`,why:`${n} ÷ ${d} = ${q}.`},mc(q,[q+1,q-1,q+2]));},
- g4u3(L){const d=rint(2,[5,8,10][L-1]||8);const n=rint(1,d-1),k=rint(1,d-n);
-   return Object.assign({q:`${frac(n,d)} + ${frac(k,d)} =`,why:`Same bottom, so add tops: ${n}+${k}=${n+k}, keep ${d}.`},
-     mc(frac(n+k,d),[frac(n+k,d+1),frac(n+k+1,d),frac(n+k-1,d)]));},
- g4u4(L){const t=rint(1,9);if(L>=2&&Math.random()<.5){const h=rint(10,99);
-     return Object.assign({q:`Write ${(h/100).toFixed(2)} as a fraction:`,why:`${h} hundredths = ${h}/100.`},mc(frac(h,100),[frac(h,10),frac(h,1000),h]));}
-   return Object.assign({q:`Write 0.${t} as a fraction:`,why:`${t} tenths = ${t}/10.`},mc(frac(t,10),[frac(t,100),frac(1,t),t*10]));},
- g4u5(L){const l=rint(2,[6,9,12][L-1]||9),w=rint(2,9);if(Math.random()<.5)
-     return Object.assign({q:`Area of a ${l} by ${w} rectangle?`,why:`Area = length × width = ${l}×${w} = ${l*w}.`},mc(l*w,[2*(l+w),l+w,l*w+l]));
-   return Object.assign({q:`Perimeter of a ${l} by ${w} rectangle?`,why:`Perimeter = ${l}+${w}+${l}+${w} = ${2*(l+w)}.`},mc(2*(l+w),[l*w,l+w,2*l+w]));},
+ g4u2as(L){const r=Math.random();
+   const big=[[1000,9999],[1000,49999],[10000,99999]][L-1]||[1000,9999];
+   /* (a) estimate a sum by rounding to the nearest hundred */
+   if(r<.24){const a=rint(150,899),b=rint(150,899),ra=Math.round(a/100)*100,rb=Math.round(b/100)*100,est=ra+rb;
+     return Object.assign({q:`Estimate ${a} + ${b} by rounding each to the nearest hundred.`,why:`${a} → ${ra}, ${b} → ${rb}; ${ra} + ${rb} = ${est.toLocaleString()}.`},mc(est.toLocaleString(),[(est+100).toLocaleString(),(est-100).toLocaleString(),(a+b).toLocaleString(),(est+200).toLocaleString()]));}
+   /* (b) estimate a difference by rounding to the nearest thousand */
+   if(r<.42){const a=rint(4000,9000),b=rint(1000,a-800),ra=Math.round(a/1000)*1000,rb=Math.round(b/1000)*1000,est=ra-rb;
+     return Object.assign({q:`Estimate ${a.toLocaleString()} − ${b.toLocaleString()} by rounding to the nearest thousand.`,why:`${a.toLocaleString()} → ${ra.toLocaleString()}, ${b.toLocaleString()} → ${rb.toLocaleString()}; ${ra.toLocaleString()} − ${rb.toLocaleString()} = ${est.toLocaleString()}.`},mc(est.toLocaleString(),[(est+1000).toLocaleString(),(est+2000).toLocaleString(),(a-b).toLocaleString(),Math.max(0,est-1000).toLocaleString()]));}
+   /* (c) exact multi-digit addition */
+   if(r<.63){const a=rint(big[0],big[1]),b=rint(big[0],big[1]),s=a+b;
+     return Object.assign({q:`${a.toLocaleString()} + ${b.toLocaleString()} =`,why:`Line up by place value and add, regrouping when a column reaches 10 → ${s.toLocaleString()}.`},mc(s.toLocaleString(),[(s+100).toLocaleString(),(s-10).toLocaleString(),(s+1000).toLocaleString(),(s-100).toLocaleString()]));}
+   /* (d) exact multi-digit subtraction (regrouping) */
+   if(r<.82){const a=rint(big[0]+800,big[1]),b=rint(big[0],a-400),d=a-b;
+     return Object.assign({q:`${a.toLocaleString()} − ${b.toLocaleString()} =`,why:`Line up by place value and subtract, regrouping across zeros → ${d.toLocaleString()}.`},mc(d.toLocaleString(),[(d+100).toLocaleString(),(d-10).toLocaleString(),(d+10).toLocaleString(),(d+1000).toLocaleString()]));}
+   /* (e) two-step word problem: start + gain − spend */
+   const start=rint(3000,6000),add=rint(500,2000),take=rint(300,1500),res=start+add-take,it=pickOne(['songs','points','coins','stamps','stickers']);
+   return Object.assign({q:`You have ${start.toLocaleString()} ${it}. You get ${add.toLocaleString()} more, then use ${take.toLocaleString()}. How many now?`,why:`${start.toLocaleString()} + ${add.toLocaleString()} − ${take.toLocaleString()} = ${res.toLocaleString()}.`},mc(res.toLocaleString(),[(res+take).toLocaleString(),(start+add+take).toLocaleString(),(res-100).toLocaleString(),(res+1000).toLocaleString()]));},
+ g4u3mul(L){const r=Math.random();
+   /* (a) multiplicative comparison: "how many times as many" */
+   if(r<.16){const b=rint(3,9),t=rint(3,8),p=b*t;
+     return Object.assign({q:`${p} = ${t} × ${b}. How many times as many is ${p} as ${b}?`,why:`${p} ÷ ${b} = ${t}, so ${p} is ${t} times as many as ${b}.`},mc(t+' times',[(t+1)+' times',(t-1)+' times',(p)+' times']));}
+   /* (b) multiply by tens/hundreds/thousands */
+   if(r<.34){const a=rint(2,9),f=pickOne([10,100,1000]),b=rint(2,9)*f,prod=a*b;
+     return Object.assign({q:`${a} × ${b.toLocaleString()} =`,why:`${a} × ${(b/f)} = ${a*(b/f)}, then attach the ${(''+f).length-1} zero(s) → ${prod.toLocaleString()}.`},mc(prod.toLocaleString(),[(prod*10).toLocaleString(),(prod/10).toLocaleString(),(a*(b/f)).toLocaleString()]));}
+   /* (c) estimate a product by rounding */
+   if(r<.50){const a=rint(3,9),n=rint(21,89)*(pickOne([1,10])),base=n<100?10:100,rn=Math.round(n/base)*base,est=a*rn;
+     return Object.assign({q:`Estimate ${a} × ${n.toLocaleString()} by rounding.`,why:`${n.toLocaleString()} rounds to ${rn.toLocaleString()}; ${a} × ${rn.toLocaleString()} = ${est.toLocaleString()}.`},mc(est.toLocaleString(),[(est+base).toLocaleString(),(est-base).toLocaleString(),(a*n).toLocaleString(),(est+2*base).toLocaleString()]));}
+   /* (d) two-digit × one-digit */
+   if(r<.68){const a=rint(12,49),b=rint(3,8),p=a*b;
+     return Object.assign({q:`${a} × ${b} =`,vis:{type:'area',a,b},why:`Break ${a} into tens and ones, multiply each by ${b}, then add the parts → ${p}.`},mc(p,[p+b,p-10,p+10,p+b*10]));}
+   /* (e) three-digit × one-digit */
+   if(r<.84){const a=rint(112,899),b=rint(3,7),p=a*b;
+     return Object.assign({q:`${a.toLocaleString()} × ${b} =`,vis:{type:'area',a,b},why:`Break ${a.toLocaleString()} into hundreds, tens, and ones, multiply each by ${b}, then add → ${p.toLocaleString()}.`},mc(p.toLocaleString(),[(p+10).toLocaleString(),(p-10).toLocaleString(),(p+100).toLocaleString(),(p+b).toLocaleString()]));}
+   /* (f) multi-step word problem */
+   const g=rint(6,12),per=rint(12,30),used=rint(10,60),tot=g*per,left=tot-used,it=pickOne(['stickers','markers','cards','cans','books']);
+   return Object.assign({q:`There are ${g} boxes of ${per} ${it}. ${used} are used. How many are left?`,why:`${g} × ${per} = ${tot}; ${tot} − ${used} = ${left}.`},mc(left,[tot,left+used,left-10,tot+used]));},
+ g4u4mul(L){const r=Math.random();
+   /* (a) multiply by a multiple of ten */
+   if(r<.22){const a=rint(11,89),t=rint(2,9),b=t*10,p=a*b;
+     return Object.assign({q:`${a} × ${b} =`,why:`${a} × ${t} tens = ${a*t} tens = ${p.toLocaleString()}.`},mc(p.toLocaleString(),[(p*10).toLocaleString(),(p/10).toLocaleString(),(a*t).toLocaleString(),(p+b).toLocaleString()]));}
+   /* (b) estimate a two-digit product by rounding */
+   if(r<.40){const a=rint(12,89),b=rint(12,89),ra=Math.round(a/10)*10,rb=Math.round(b/10)*10,est=ra*rb;
+     return Object.assign({q:`Estimate ${a} × ${b} by rounding to the nearest ten.`,why:`${a} → ${ra}, ${b} → ${rb}; ${ra} × ${rb} = ${est.toLocaleString()}.`},mc(est.toLocaleString(),[(est+100).toLocaleString(),(a*b).toLocaleString(),(est+ra*10).toLocaleString(),Math.max(0,est-100).toLocaleString()]));}
+   /* (c) two-digit × two-digit (exact) */
+   if(r<.72){const a=rint(12,79),b=rint(12,49),p=a*b;
+     return Object.assign({q:`${a} × ${b} =`,vis:{type:'area',a,b},why:`Split each factor into tens and ones; the area model's four parts are the partial products. Add them → ${p.toLocaleString()}.`},mc(p.toLocaleString(),[(p+10).toLocaleString(),(p-10).toLocaleString(),(p+100).toLocaleString(),(p-100).toLocaleString()]));}
+   /* (d) identify a partial product */
+   if(r<.84){const a=rint(2,8),b=rint(2,8),pa=a*10,pb=b*10,prod=pa*pb;
+     return Object.assign({q:`In ${pa+rint(1,9)} × ${pb+rint(1,9)}, one partial product is ${pa} × ${pb}. What is it?`,why:`${a} tens × ${b} tens = ${a*b} hundreds = ${prod.toLocaleString()}.`},mc(prod.toLocaleString(),[(a*b).toLocaleString(),(a*b*10).toLocaleString(),(prod*10).toLocaleString()]));}
+   /* (e) multi-step word problem */
+   const g=rint(12,40),per=rint(12,40),extra=rint(50,300),tot=g*per,left=tot-extra,it=pickOne(['seats','cars','cans','books','tickets']);
+   if(left<=0)return GEN.g4u4mul(L);
+   return Object.assign({q:`There are ${g} rows of ${per} ${it}. ${extra} are taken. How many are left?`,why:`${g} × ${per} = ${tot.toLocaleString()}; ${tot.toLocaleString()} − ${extra} = ${left.toLocaleString()}.`},mc(left.toLocaleString(),[tot.toLocaleString(),(left+extra).toLocaleString(),(left-10).toLocaleString(),(tot+extra).toLocaleString()]));},
+ g4u6(L){const r=Math.random();
+   /* (a) identify a factor */
+   if(r<.22){const N=pickOne([12,16,18,20,24,28,30,36,40,45,48]);const facs=[];for(let i=2;i<N;i++)if(N%i===0)facs.push(i);
+     const correct=pickOne(facs);const wrongs=[];let g=0;while(wrongs.length<3&&g<60){g++;const c=rint(2,N-1);if(N%c!==0&&c!==correct&&!wrongs.includes(c))wrongs.push(c);}
+     return Object.assign({q:`Which number is a factor of ${N}?`,why:`${N} ÷ ${correct} = ${N/correct}, so ${correct} is a factor of ${N}.`},mc(''+correct,wrongs.map(String)));}
+   /* (b) identify a multiple */
+   if(r<.42){const b=rint(3,9),k=rint(3,9),m=b*k;
+     return Object.assign({q:`Which number is a multiple of ${b}?`,why:`${b} × ${k} = ${m}.`},mc(''+m,[''+(m+1),''+(m-1),''+(m+b-1)]));}
+   /* (c) divisibility */
+   if(r<.60){const d=pickOne([2,3,5,9]),k=rint(4,12),correct=d*k;const wrongs=[];let g=0;while(wrongs.length<3&&g<60){g++;const c=correct+rint(1,9);if(c%d!==0&&!wrongs.includes(c)&&c!==correct)wrongs.push(c);}
+     return Object.assign({q:`Which number is divisible by ${d}?`,why:`${correct} ÷ ${d} = ${k}.`},mc(''+correct,wrongs.map(String)));}
+   /* (d) prime vs composite */
+   if(r<.80){const primes=[2,3,5,7,11,13,17,19,23,29,31,37],comps=[4,6,8,9,10,12,14,15,16,18,21,22,25,26,27,33,35,39,49];
+     if(Math.random()<.5){const p=pickOne(primes),w=[];let g=0;while(w.length<3&&g<60){g++;const c=pickOne(comps);if(!w.includes(c))w.push(c);}
+       return Object.assign({q:`Which number is PRIME?`,why:`${p} has exactly two factors: 1 and ${p}.`},mc(''+p,w.map(String)));}
+     const c=pickOne(comps),w=[];let g=0;while(w.length<3&&g<60){g++;const x=pickOne(primes);if(!w.includes(x))w.push(x);}
+     return Object.assign({q:`Which number is COMPOSITE?`,why:`${c} has more than two factors.`},mc(''+c,w.map(String)));}
+   /* (e) number pattern next term */
+   const start=rint(2,6),step=pickOne([2,3,4,5]),s=[start,start+step,start+2*step,start+3*step],next=start+4*step;
+   return Object.assign({q:`What comes next? ${s.join(', ')}, ___`,why:`The rule is add ${step}: ${s[3]} + ${step} = ${next}.`},mc(''+next,[''+(next+1),''+(next-1),''+(next+step)]));},
+ g4u2(L){const r=Math.random();
+   /* (a) divide tens/hundreds */
+   if(r<.22){const q=rint(2,9),d=rint(2,9),f=pickOne([10,100]),quo=q*f,n=d*quo;
+     return Object.assign({q:`${n.toLocaleString()} ÷ ${d} =`,why:`${d} × ${quo.toLocaleString()} = ${n.toLocaleString()}, so ${n.toLocaleString()} ÷ ${d} = ${quo.toLocaleString()}.`},mc(quo.toLocaleString(),[(quo*10).toLocaleString(),(quo/10).toLocaleString(),(quo+f).toLocaleString()]));}
+   /* (b) division with a remainder */
+   if(r<.45){const d=rint(3,8),quo=rint(6,15),rem=rint(1,d-1),n=d*quo+rem,rd=(rem+1<d)?rem+1:rem-1;
+     return Object.assign({q:`${n} ÷ ${d} =`,why:`${d} × ${quo} = ${d*quo}, remainder ${rem} → ${quo} R${rem}.`},mc(quo+' R'+rem,[quo+' R'+rd,(quo+1)+' R'+rem,(quo-1)+' R'+rem]));}
+   /* (c) multi-digit ÷ one-digit (exact) */
+   if(r<.66){const d=rint(3,8),quo=rint(30,400),n=d*quo;
+     return Object.assign({q:`${n.toLocaleString()} ÷ ${d} =`,why:`${d} × ${quo} = ${n.toLocaleString()}.`},mc(quo.toLocaleString(),[(quo+10).toLocaleString(),(quo-10).toLocaleString(),(quo+1).toLocaleString(),(quo+100).toLocaleString()]));}
+   /* (d) estimate a quotient with compatible numbers */
+   if(r<.82){const d=rint(3,8),quoTen=rint(3,9)*10,comp=d*quoTen,n=comp+rint(1,d-1);
+     return Object.assign({q:`Estimate ${n.toLocaleString()} ÷ ${d} using compatible numbers.`,why:`Use ${comp.toLocaleString()} ÷ ${d} = ${quoTen}.`},mc(''+quoTen,[''+(quoTen+10),''+(quoTen-10),''+(quoTen*10)]));}
+   /* (e) division word problem */
+   const d=rint(3,8),quo=rint(12,60),n=d*quo,it=pickOne(['students','markers','books','cans','stickers']),grp=pickOne(['teams','classes','boxes','shelves','groups']);
+   return Object.assign({q:`${n} ${it} are shared equally among ${d} ${grp}. How many in each?`,why:`${n} ÷ ${d} = ${quo}.`},mc(''+quo,[''+(quo+1),''+(quo-1),''+(quo+10)]));},
+ g4u3(L){const r=Math.random();
+   /* (a) equivalent fraction — missing numerator */
+   if(r<.4){const d=rint(2,6),n=rint(1,d-1),k=rint(2,4),nd=d*k,nn=n*k;
+     return Object.assign({q:`${frac(n,d)} = ___ / ${nd}. What numerator makes the fractions equal?`,vis:{type:'fbar',n,d},why:`Multiply top and bottom by ${k}: ${n} × ${k} = ${nn}.`},mc(''+nn,[''+(nn+1),''+(nn+d),''+n]));}
+   /* (b) compare two fractions with the same denominator */
+   if(r<.72){const d=rint(3,9);let a,b;do{a=rint(1,d);b=rint(1,d);}while(a===b);
+     return {q:`Which is greater, ${frac(a,d)} or ${frac(b,d)}?`,vis:{type:'fbar',n:a,d,n2:b,d2:d},o:[frac(a,d),frac(b,d),"they are equal","can't tell"],a:(a>b?0:1),why:`Same denominator, so the fraction with the greater numerator is greater.`};}
+   /* (c) compare a fraction to the benchmark 1/2 */
+   const d=pickOne([4,6,8,10]);let n;do{n=rint(1,d-1);}while(n*2===d);
+   const cmp=(n*2>d)?'greater than 1/2':'less than 1/2',other=(cmp==='greater than 1/2')?'less than 1/2':'greater than 1/2';
+   return Object.assign({q:`Is ${frac(n,d)} greater than or less than 1/2?`,vis:{type:'fbar',n,d},why:`Half of ${d} is ${d/2}. Since ${n} is ${n*2>d?'more':'less'} than ${d/2}, ${frac(n,d)} is ${cmp}.`},mc(cmp,[other,'equal to 1/2','cannot tell']));},
+ g4u9(L){const r=Math.random();
+   /* (a) fraction as a multiple of a unit fraction */
+   if(r<.3){const d=pickOne([3,4,5,6,8,10]),a=rint(2,d-1);
+     return Object.assign({q:`Write ${frac(a,d)} as a multiple of a unit fraction.`,vis:{type:'fbar',n:a,d},why:`${a} copies of 1/${d}: ${a}/${d} = ${a} × 1/${d}.`},mc(a+' × 1/'+d,[d+' × 1/'+a,a+' × '+a+'/'+d,'1/'+a+' × 1/'+d]));}
+   /* (b) whole number × fraction */
+   if(r<.7){const d=pickOne([3,4,5,6,8,10]),a=rint(1,d-1),n=rint(2,6),num=n*a;
+     return Object.assign({q:`${n} × ${frac(a,d)} =`,why:`${n} × ${a} = ${num}, keep the ${d} → ${frac(num,d)}.`},mc(frac(num,d),[frac(a,d),frac(num+d,d),frac(num,d+n)]));}
+   /* (c) whole number × mixed number (as a fraction) */
+   const d=pickOne([2,3,4,5]),w=rint(1,2),f=rint(1,d-1),n=rint(2,4),imp=w*d+f,num=n*imp;
+   return Object.assign({q:`${n} × ${w} ${frac(f,d)} = (write as a fraction greater than 1)`,why:`${w} ${f}/${d} = ${imp}/${d}; ${n} × ${imp}/${d} = ${frac(num,d)}.`},mc(frac(num,d),[frac(imp,d),frac(num+d,d),frac(num,d+1)]));},
+ g4u8(L){const r=Math.random(),d=pickOne([5,6,8,10,12]);
+   /* (a) add fractions, like denominators */
+   if(r<.3){let a,b;do{a=rint(1,d-1);b=rint(1,d-1);}while(a+b>=d||a===b);const s=a+b;
+     return Object.assign({q:`${frac(a,d)} + ${frac(b,d)} =`,vis:{type:'fbar',n:a,d,n2:b,d2:d},why:`Add the numerators, keep the denominator: ${a} + ${b} = ${s} → ${frac(s,d)}.`},mc(frac(s,d),[frac(s,2*d),frac(s+1,d),frac(a,d)]));}
+   /* (b) subtract fractions, like denominators */
+   if(r<.55){const a=rint(2,d-1),b=rint(1,a-1),s=a-b;
+     return Object.assign({q:`${frac(a,d)} − ${frac(b,d)} =`,vis:{type:'fbar',n:a,d},why:`Start with ${a} shaded parts and take away ${b}: ${a} − ${b} = ${s} → ${frac(s,d)}.`},mc(frac(s,d),[frac(s,2*d),frac(s+1,d),frac(a+b,d)]));}
+   /* (c) decompose — missing part */
+   if(r<.78){const t=rint(3,d-1),p=rint(1,t-2);
+     return Object.assign({q:`${frac(t,d)} = ${frac(p,d)} + ___`,why:`${t}/${d} − ${p}/${d} = ${frac(t-p,d)}.`},mc(frac(t-p,d),[frac(t-p,2*d),frac(t-p+1,d),frac(t,d)]));}
+   /* (d) mixed number to fraction */
+   const w=rint(1,3),n=rint(1,d-1),imp=w*d+n;
+   return Object.assign({q:`Write ${w} ${frac(n,d)} as a fraction greater than 1.`,why:`${w} × ${d} + ${n} = ${imp} → ${frac(imp,d)}.`},mc(frac(imp,d),[frac(w,d),frac(imp+1,d),frac(imp-1,d)]));},
+ g4u4(L){const r=Math.random();
+   /* (a) tenths fraction to decimal */
+   if(r<.25){const t=rint(1,9);
+     return Object.assign({q:`Write ${frac(t,10)} as a decimal.`,vis:{type:'tenths',n:t},why:`${t} of 10 equal parts shaded = ${t} tenths = 0.${t}.`},mc('0.'+t,['0.0'+t,t+'.0',''+(t*10)]));}
+   /* (b) hundredths fraction to decimal */
+   if(r<.5){const h=rint(11,98);
+     return Object.assign({q:`Write ${frac(h,100)} as a decimal.`,vis:{type:'dgrid',n:h},why:`${h} of 100 squares shaded = ${h} hundredths = 0.${h}.`},mc('0.'+h,[(h/10).toFixed(1),''+h,'0.0'+h]));}
+   /* (c) compare two decimals */
+   if(r<.75){let a,b;do{a=rint(11,98);b=rint(11,98);}while(a===b);const da=(a/100).toFixed(2),db=(b/100).toFixed(2);
+     return {q:`Which is greater, ${da} or ${db}?`,o:[da,db,"they are equal","can't tell"],a:(a>b?0:1),why:`Compare the hundredths: ${(a>b?da:db)} is greater.`};}
+   /* (d) add money */
+   const ca=rint(105,895),cb=rint(105,395),sum=ca+cb;
+   return Object.assign({q:`$${(ca/100).toFixed(2)} + $${(cb/100).toFixed(2)} =`,why:`Line up the decimal points and add → $${(sum/100).toFixed(2)}.`},mc('$'+(sum/100).toFixed(2),['$'+((sum+10)/100).toFixed(2),'$'+((sum-10)/100).toFixed(2),'$'+((sum+100)/100).toFixed(2)]));},
+ g4u11(L){const r=Math.random();
+   /* (a) metric length */
+   if(r<.2){const [big,small,f]=pickOne([['m','cm',100],['km','m',1000],['cm','mm',10]]),n=rint(2,9),ans=n*f;
+     return Object.assign({q:`${n} ${big} = ___ ${small}`,why:`1 ${big} = ${f.toLocaleString()} ${small}; ${n} × ${f.toLocaleString()} = ${ans.toLocaleString()}.`},mc(ans.toLocaleString(),[(ans*10).toLocaleString(),(ans+f).toLocaleString(),''+n]));}
+   /* (b) customary length */
+   if(r<.4){const [big,small,f]=pickOne([['ft','in',12],['yd','ft',3],['mi','yd',1760]]),n=rint(2,9),ans=n*f;
+     return Object.assign({q:`${n} ${big} = ___ ${small}`,why:`1 ${big} = ${f.toLocaleString()} ${small}; ${n} × ${f.toLocaleString()} = ${ans.toLocaleString()}.`},mc(ans.toLocaleString(),[(ans*10).toLocaleString(),(ans+f).toLocaleString(),''+n]));}
+   /* (c) weight */
+   if(r<.55){const [big,small,f]=pickOne([['lb','oz',16],['T','lb',2000]]),n=rint(2,9),ans=n*f;
+     return Object.assign({q:`${n} ${big} = ___ ${small}`,why:`1 ${big} = ${f.toLocaleString()} ${small}; ${n} × ${f.toLocaleString()} = ${ans.toLocaleString()}.`},mc(ans.toLocaleString(),[(ans*10).toLocaleString(),(ans+f).toLocaleString(),''+n]));}
+   /* (d) capacity */
+   if(r<.75){const [big,small,f]=pickOne([['pt','c',2],['qt','pt',2],['gal','qt',4]]),n=rint(2,9),ans=n*f;
+     return Object.assign({q:`${n} ${big} = ___ ${small}`,why:`1 ${big} = ${f} ${small}; ${n} × ${f} = ${ans}.`},mc(''+ans,[''+(ans+1),''+(ans-1),''+n]));}
+   /* (e) time */
+   const [big,small,f]=pickOne([['min','sec',60],['h','min',60],['d','h',24],['wk','d',7]]),n=rint(2,9),ans=n*f;
+   return Object.assign({q:`${n} ${big} = ___ ${small}`,why:`1 ${big} = ${f} ${small}; ${n} × ${f} = ${ans}.`},mc(''+ans,[''+(ans+f),''+(ans-f),''+n]));},
+ g4u12(L){const r=Math.random(),l=rint(3,15),w=rint(2,l-1);
+   /* (a) perimeter */
+   if(r<.3){const p=2*(l+w);
+     return Object.assign({q:`Perimeter of this ${l} by ${w} rectangle?`,vis:{type:'arect',l,w},why:`Add all four sides: (2 × ${l}) + (2 × ${w}) = ${p}.`},mc(''+p,[''+(l*w),''+(l+w),''+(p+2)]));}
+   /* (b) area */
+   if(r<.6){const a=l*w;
+     return Object.assign({q:`Area of this ${l} by ${w} rectangle?`,vis:{type:'arect',l,w},why:`Count the unit squares, or ${l} × ${w} = ${a} square units.`},mc(''+a,[''+(2*(l+w)),''+(l+w),''+(a+l)]));}
+   /* (c) find a side from the area */
+   if(r<.8){const a=l*w;
+     return Object.assign({q:`A rectangle has area ${a} and length ${l}. What is the width?`,why:`${a} ÷ ${l} = ${w}.`},mc(''+w,[''+l,''+(a-l),''+(w+1)]));}
+   /* (d) find a side from the perimeter */
+   const p=2*(l+w);
+   return Object.assign({q:`A rectangle has perimeter ${p} and length ${l}. What is the width?`,why:`${p} ÷ 2 = ${l+w}; ${l+w} − ${l} = ${w}.`},mc(''+w,[''+(p-l),''+(l+w),''+(w+2)]));},
+ g4u5(L){const r=Math.random();
+   /* (a) classify an angle */
+   if(r<.3){const d=pickOne([20,25,35,40,55,70,80,90,100,110,120,130,150,160]),cls=d<90?'acute':d===90?'right':'obtuse';
+     return Object.assign({q:`Classify this angle.`,vis:{type:'angle',deg:d},why:`${d<90?'Less than 90° → acute':d===90?'Exactly 90° → right':'Between 90° and 180° → obtuse'}.`},mc(cls,['acute','right','obtuse','straight'].filter(x=>x!==cls)));}
+   /* (b) fraction of a circle to degrees */
+   if(r<.55){const [n,dn,deg]=pickOne([[1,4,90],[1,6,60],[1,3,120],[1,12,30],[2,3,240],[1,9,40]]);
+     return Object.assign({q:`An angle that turns ${n}/${dn} of a circle measures...`,why:`${n}/${dn} × 360 = ${deg}°.`},mc(deg+'°',[(deg+10)+'°',(deg-10)+'°',(360-deg)+'°']));}
+   /* (c) add adjacent angles */
+   if(r<.8){const a=rint(20,70),b=rint(20,70),s=a+b;
+     return Object.assign({q:`∠ABD = ${a}° and ∠DBC = ${b}°. What is ∠ABC?`,why:`${a}° + ${b}° = ${s}°.`},mc(s+'°',[(s+10)+'°',a+'°',b+'°']));}
+   /* (d) complementary / supplementary */
+   const comp=Math.random()<.5,whole=comp?90:180,x=rint(15,whole-15),other=whole-x;
+   return Object.assign({q:`Two ${comp?'complementary':'supplementary'} angles: one is ${x}°. What is the other?`,why:`${whole}° − ${x}° = ${other}°.`},mc(other+'°',[(other+10)+'°',(other-10)+'°',x+'°']));},
+ g4u14(L){const r=Math.random();
+   /* (a) lines of symmetry of a named shape */
+   if(r<.25){const [shape,lines]=pickOne([['square',4],['rectangle',2],['equilateral triangle',3],['regular pentagon',5],['regular hexagon',6]]);
+     return Object.assign({q:`How many lines of symmetry does this shape (a ${shape}) have?`,vis:{type:'sym',shape:{'square':'square','rectangle':'rectangle','equilateral triangle':'triangle','regular pentagon':'pentagon','regular hexagon':'hexagon'}[shape],showLines:false},why:`A ${shape} has ${lines} lines of symmetry.`},mc(''+lines,[''+(lines+1),''+Math.max(0,lines-1),''+(lines+2)]));}
+   /* (b) classify a triangle by its sides */
+   if(r<.5){const kind=pickOne(['equilateral','isosceles','scalene']);let a,b,c;
+     if(kind==='equilateral'){a=b=c=pickOne([4,5,6,7,8]);}
+     else if(kind==='isosceles'){a=b=pickOne([5,6,7,8]);c=pickOne([3,4,9,10]);}
+     else{a=pickOne([3,4]);b=pickOne([5,6]);c=pickOne([7,8]);}
+     return Object.assign({q:`A triangle has sides ${a}, ${b}, ${c}. Classify it by its sides.`,vis:{type:'tri',by:'sides',kind},why:`${kind==='equilateral'?'All three sides equal → equilateral':kind==='isosceles'?'Two sides equal → isosceles':'No sides equal → scalene'}. Matching tick marks show equal sides.`},mc(kind,['equilateral','isosceles','scalene'].filter(x=>x!==kind)));}
+   /* (c) classify a triangle by its angles */
+   if(r<.75){const [angs,kind]=pickOne([[[60,60,60],'acute'],[[40,60,80],'acute'],[[90,45,45],'right'],[[90,60,30],'right'],[[120,30,30],'obtuse'],[[100,40,40],'obtuse']]);
+     return Object.assign({q:`A triangle has angles ${angs[0]}°, ${angs[1]}°, ${angs[2]}°. Classify it by its angles.`,vis:{type:'tri',by:'angles',kind},why:`${kind==='acute'?'All angles less than 90° → acute':kind==='right'?'One 90° angle → right':'One angle greater than 90° → obtuse'}.`},mc(kind,['acute','right','obtuse'].filter(x=>x!==kind)));}
+   /* (d) classify a quadrilateral */
+   const [desc,kind]=pickOne([['exactly one pair of parallel sides','trapezoid'],['four right angles and four equal sides','square'],['four right angles but sides not all equal','rectangle'],['four equal sides but no right angles','rhombus'],['two pairs of parallel sides','parallelogram']]);
+   return Object.assign({q:`A quadrilateral has ${desc}. What is it?`,vis:{type:'quad',kind},why:`A quadrilateral with ${desc} is a ${kind}.`},mc(kind,['trapezoid','square','rectangle','rhombus','parallelogram'].filter(x=>x!==kind)));},
  g5u1(L){const whole=rint(1,9),a=rint(1,9),b=rint(1,9);const H=whole*100+a*10+b;// hundredths, integer
    const numStr=(H/100).toFixed(2);const tenths=Math.floor(H/10)+(b>=5?1:0);const rt=(tenths/10).toFixed(1);
    return Object.assign({q:`Round ${numStr} to the nearest tenth:`,
@@ -848,6 +1153,7 @@ function nextPractice(){const topic=pickOne(PR.topics);const isMs=topic.indexOf(
     <div class="quiz-box"><div class="practice-hud"><span>${PR.label}</span>
       <span><span class="level-chip">Level ${PR.level}</span> &nbsp; ✅ ${PR.correct}/${PR.answered} (${acc}%)</span></div>
     <div class="q-text">${item.q}</div>
+    ${item.vis!==undefined?`<div class="q-visual" style="text-align:center;margin:8px 0">${qVisual(item.vis)}</div>`:''}
     ${speakCtl()}
     <div class="options" id="pr-opts">${item.o.map((o,k)=>`<button class="opt" onclick="prPick(${k})">${o}</button>`).join('')}</div>
     <div class="feedback" id="pr-fb"></div>
